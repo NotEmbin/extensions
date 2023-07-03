@@ -12,7 +12,7 @@ function scratch_mod(value, mod) {
       throw new Error('This extension must run unsandboxed');
     }
 
-    const version = 'v1.0.2';
+    const version = 'v1.1.0';
 
     class EmbinUtils {
         getInfo() {
@@ -119,6 +119,24 @@ function scratch_mod(value, mod) {
                 }
               }
             },
+            {
+              opcode: 'if_else_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'if [if] then [then] else [else]',
+              arguments: {
+                if: {
+                  type: Scratch.ArgumentType.BOOLEAN
+              },
+                then: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ''
+              },
+                else: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ''
+                }
+            }
+          },
 
             '---',
 
@@ -280,6 +298,11 @@ function scratch_mod(value, mod) {
         if_else_green_flag_reporter(args, util) {
             if (args.if) return args.then;
             util.runtime.greenFlag(); 
+        }
+
+        if_else_reporter(args) {
+          if (args.if) return args.then;
+          return args.else; 
         }
       }
   
