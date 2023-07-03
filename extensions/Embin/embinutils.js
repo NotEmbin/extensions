@@ -12,7 +12,9 @@ function scratch_mod(value, mod) {
       throw new Error('This extension must run unsandboxed');
     }
 
-    const version = 'v1.2.0';
+    const hide_legacy_blocks = true;
+
+    const version = 'v1.3.0';
 
     class EmbinUtils {
         getInfo() {
@@ -28,6 +30,21 @@ function scratch_mod(value, mod) {
                 disableMonitor: true,
                 text: '"Embin\'s Utils" version'
             },
+
+            '---',
+
+            //{
+              //func: 'show_old_blocks',
+              //blockType: Scratch.BlockType.BUTTON,
+              //text: 'Show Old Blcoks'
+              //hideFromPalette: !hide_legacy_blocks
+            //},
+            //{
+              //func: 'hide_old_blocks',
+              //blockType: Scratch.BlockType.BUTTON,
+              //text: 'Hide Old Blocks'
+              //hideFromPalette: hide_legacy_blocks
+            //},
 
             '---',
 
@@ -106,9 +123,22 @@ function scratch_mod(value, mod) {
               }
             },
             {
+                opcode: 'convert_to_id',
+                blockType: Scratch.BlockType.REPORTER,
+                text: 'convert [strin] to valid id',
+                arguments: {
+                  strin: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: 'Why, hello there!'
+                    //defaultValue: 'Hello Embin & the World'
+                }
+              }
+            },
+            {
                 opcode: 'if_else_green_flag_reporter',
                 blockType: Scratch.BlockType.REPORTER,
-                text: 'if [if] then [then] else run green flag',
+                text: 'OLD | if [if] then [then] else run green flag',
+                hideFromPalette: hide_legacy_blocks,
                 arguments: {
                   if: {
                     type: Scratch.ArgumentType.BOOLEAN
@@ -116,6 +146,25 @@ function scratch_mod(value, mod) {
                   then: {
                       type: Scratch.ArgumentType.STRING,
                       defaultValue: 'abc'
+                }
+              }
+            },
+            {
+              opcode: 'if_else_action_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'if [if] then [then] else [act]',
+              arguments: {
+                if: {
+                  type: Scratch.ArgumentType.BOOLEAN
+              },
+                then: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'abc'
+              },
+                act: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'stop script',
+                  menu: 'if_else_action_menu'
                 }
               }
             },
@@ -135,23 +184,23 @@ function scratch_mod(value, mod) {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'xyz'
                 }
-            }
-          },
-          {
-            opcode: 'join_newline',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'join [thing_1] \\n [thing_2]',
-            arguments: {
-              thing_1: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'a'
+              }
             },
-              thing_2: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'b'
-            }
-          }
-        },
+            {
+              opcode: 'join_newline',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'join [thing_1] \\n [thing_2]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                }
+              }
+            },
 
             '---',
 
@@ -255,11 +304,25 @@ function scratch_mod(value, mod) {
                 }
               }
             }
+
+
             ],
             menus: {
               console_log_menu: {
                 acceptReporters: true,
                 items: ['log', 'warn', 'error']
+              },
+              if_else_action_menu: {
+                acceptReporters: true,
+                items: [
+                  'run green flag',
+                  'clear console',
+                  'return nothing',
+                  'return true',
+                  'return false',
+                  'stop project',
+                  'stop script'
+                ]
               }
             }
           };
@@ -367,6 +430,49 @@ function scratch_mod(value, mod) {
         join_newline(args) {
           return String(args.thing_1) + '\n' + String(args.thing_2)
         }
+
+        convert_to_id(args) {
+          var new_string = String(args.strin).toLowerCase();
+          var new_string = new_string.replaceAll(' ', '_');
+          var new_string = new_string.replaceAll('&', 'and');
+          var new_string = new_string.replaceAll(',', '');
+          var new_string = new_string.replaceAll('!', '');
+          var new_string = new_string.replaceAll('?', '');
+          var new_string = new_string.replaceAll('"', '');
+          var new_string = new_string.replaceAll("'", '');
+          return new_string;
+        }
+
+        if_else_action_reporter(args, util) {
+          if (args.if) return args.then;
+          if (args.act == 'run green flag') {util.runtime.greenFlag();}
+          if (args.act == 'green flag') {util.runtime.greenFlag();}
+          if (args.act == 'clear console') {console.clear();}
+          if (args.act == 'return true') return true;
+          if (args.act == 'return false') return false;
+          if (args.act == 'return nothing') return '';
+          if (args.act == 'true') return true;
+          if (args.act == 'false') return false;
+          if (args.act == 'nothing') return '';
+          if (args.act == 'stop project') {util.stopAll();}
+          if (args.act == 'stop script') {util.stopThisScript();}
+          //return null; 
+        }
+
+        hide_old_blocks() {
+          hide_legacy_blocks = true;
+          Scratch.vm.extensionManager.refreshBlocks();
+        }
+
+        show_old_blocks() {
+          if (confirm('Are you sure you want to show old, hidden, and discontinued blocks?')) {
+            hide_legacy_blocks = false;
+            Scratch.vm.extensionManager.refreshBlocks();
+          } else {
+            Scratch.vm.extensionManager.refreshBlocks();
+          }
+        }
+
       }
   
     Scratch.extensions.register(new EmbinUtils());
