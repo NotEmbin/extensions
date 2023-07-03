@@ -12,7 +12,7 @@ function scratch_mod(value, mod) {
       throw new Error('This extension must run unsandboxed');
     }
 
-    const version = 'v1.1.1';
+    const version = 'v1.2.0';
 
     class EmbinUtils {
         getInfo() {
@@ -137,6 +137,21 @@ function scratch_mod(value, mod) {
                 }
             }
           },
+          {
+            opcode: 'join_newline',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'join [thing_1] \\n [thing_2]',
+            arguments: {
+              thing_1: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'a'
+            },
+              thing_2: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: 'b'
+            }
+          }
+        },
 
             '---',
 
@@ -144,6 +159,28 @@ function scratch_mod(value, mod) {
                 opcode: 'green_flag',
                 blockType: Scratch.BlockType.COMMAND,
                 text: 'run green flag'
+            },
+            {
+              opcode: 'console_log',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'console [log_type] [input]',
+              disableMonitor: true,
+              arguments: {
+                log_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'log',
+                  menu: 'console_log_menu'
+                },
+                input: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'something'
+                }
+              }
+            },
+            {
+              opcode: 'clear_console',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'clear console'
             },
 
             '---',
@@ -218,7 +255,13 @@ function scratch_mod(value, mod) {
                 }
               }
             }
-            ]
+            ],
+            menus: {
+              console_log_menu: {
+                acceptReporters: true,
+                items: ['log', 'warn', 'error']
+              }
+            }
           };
         }
   
@@ -303,6 +346,26 @@ function scratch_mod(value, mod) {
         if_else_reporter(args) {
             if (args.if) return args.then;
             return args.else; 
+        }
+
+        console_log(args) {
+          if (args.log_type === 'log') {
+            console.log(args.input);
+          } else if (args.log_type === 'warn') {
+            console.warn(args.input);
+          } else if (args.log_type === 'error') {
+            console.error(args.input);
+          } else {
+            console.log(args.input);
+          }
+        }
+
+        clear_console() {
+          console.clear();
+        }
+
+        join_newline(args) {
+          return String(args.thing_1) + '\n' + String(args.thing_2)
         }
       }
   
