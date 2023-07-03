@@ -8,11 +8,11 @@ function scratch_mod(value, mod) {
     'use strict';
 
     if (!Scratch.extensions.unsandboxed) {
-      console.warn('Extension is being run in sandbox mode.');  
-      //throw new Error('This extension must* run unsandboxed');
+      //console.warn('Extension is being run in sandbox mode.');  
+      throw new Error('This extension must run unsandboxed');
     }
 
-    const version = 'v1.0.0';
+    const version = 'v1.0.2';
 
     class EmbinUtils {
         getInfo() {
