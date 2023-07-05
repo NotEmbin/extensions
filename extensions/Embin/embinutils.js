@@ -14,7 +14,7 @@ function scratch_mod(value, mod) {
 
     const hide_legacy_blocks = true;
 
-    const version = 'v1.3.0';
+    const version = 'v1.4.0';
 
     class EmbinUtils {
         getInfo() {
@@ -198,6 +198,58 @@ function scratch_mod(value, mod) {
                 thing_2: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'b'
+                }
+              }
+            },
+            {
+              opcode: 'convert_to_negative',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '- [thing]',
+              arguments: {
+                thing: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '7'
+                }
+              }
+            },
+            {
+              opcode: 'to_the_power_of',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '[p1] ^ [p2]',
+              arguments: {
+                p1: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '2'
+                },
+                p2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '16'
+                }
+              }
+            },
+            {
+              opcode: 'to_the_power_of_minus_one',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '[pm1] ^ [pm2] - 1',
+              arguments: {
+                pm1: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '2'
+                },
+                pm2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '31'
+                }
+              }
+            },
+            {
+              opcode: 'color_hex',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'color [color]',
+              arguments: {
+                color: {
+                  type: Scratch.ArgumentType.COLOR,
+                  defaultValue: '#ff0000'
                 }
               }
             },
@@ -471,6 +523,22 @@ function scratch_mod(value, mod) {
           } else {
             Scratch.vm.extensionManager.refreshBlocks();
           }
+        }
+
+        convert_to_negative(args) {
+          return (0 - args.thing);
+        }
+
+        color_hex(args) {
+          return args.color;
+        }
+
+        to_the_power_of(args) {
+          return (args.p1 ** args.p2);
+        }
+
+        to_the_power_of_minus_one(args) {
+          return (args.pm1 ** args.pm2) - 1;
         }
 
       }
