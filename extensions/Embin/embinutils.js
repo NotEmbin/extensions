@@ -14,7 +14,9 @@ function scratch_mod(value, mod) {
 
     const hide_legacy_blocks = true;
 
-    const version = 'v1.4.0';
+    const version = 'v1.5.0';
+
+    const argbuffer = '#';
 
     class EmbinUtils {
         getInfo() {
@@ -198,6 +200,25 @@ function scratch_mod(value, mod) {
                 thing_2: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'b'
+                }
+              }
+            },
+            {
+              opcode: 'insert_in_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'add [add_string] to [og_string] at [index]',
+              arguments: {
+                add_string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ","
+                },
+                og_string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "12345"
+                },
+                index: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 2
                 }
               }
             },
@@ -539,6 +560,18 @@ function scratch_mod(value, mod) {
 
         to_the_power_of_minus_one(args) {
           return (args.pm1 ** args.pm2) - 1;
+        }
+
+        insert_in_string(args) {
+          if (args.index > args.og_string.length) {
+            buffer = argbuffer.repeat(args.index - args.og_string.length)
+            args.og_string += buffer;
+          } else if (args.index < 0) {
+            buffer = argbuffer.repeat(args.index * -1)
+            args.og_string = buffer + args.og_string;
+            args.index = 0;
+          }
+          return args.og_string.substring(0, args.index) + args.add_string + args.og_string.substring(args.index);
         }
 
       }
