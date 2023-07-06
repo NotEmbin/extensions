@@ -7,16 +7,15 @@ function scratch_mod(value, mod) {
 (function(Scratch) {
     'use strict';
 
+    const version = 'v1.5.1';
+
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
       throw new Error('This extension must run unsandboxed');
     }
 
-    const hide_legacy_blocks = true;
-
-    const version = 'v1.5.0';
-
     const argbuffer = '#';
+    const hide_legacy_blocks = true;
 
     class EmbinUtils {
         getInfo() {
@@ -206,7 +205,7 @@ function scratch_mod(value, mod) {
             {
               opcode: 'insert_in_string',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'add [add_string] to [og_string] at [index]',
+              text: 'insert [add_string] into [og_string] at [index]',
               arguments: {
                 add_string: {
                   type: Scratch.ArgumentType.STRING,
