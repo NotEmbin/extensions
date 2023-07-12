@@ -7,7 +7,7 @@ function scratch_mod(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const version = 'v1.5.1';
+    const version = 'v1.5.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -81,6 +81,18 @@ function scratch_mod(value, mod) {
                 blockType: Scratch.BlockType.REPORTER,
                 disableMonitor: true,
                 text: 'newline'
+            },
+            {
+              opcode: 'return_tab',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'tab character'
+            },
+            {
+              opcode: 'return_null',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'null'
             },
             {
                 opcode: 'string_split',
@@ -392,6 +404,7 @@ function scratch_mod(value, mod) {
                   'return nothing',
                   'return true',
                   'return false',
+                  'return null',
                   'stop project',
                   'stop script'
                 ]
@@ -522,9 +535,11 @@ function scratch_mod(value, mod) {
           if (args.act == 'clear console') {console.clear();}
           if (args.act == 'return true') return true;
           if (args.act == 'return false') return false;
+          if (args.act == 'return null') return null;
           if (args.act == 'return nothing') return '';
           if (args.act == 'true') return true;
           if (args.act == 'false') return false;
+          if (args.act == 'null') return null;
           if (args.act == 'nothing') return '';
           if (args.act == 'stop project') {util.stopAll();}
           if (args.act == 'stop script') {util.stopThisScript();}
@@ -571,6 +586,14 @@ function scratch_mod(value, mod) {
             args.index = 0;
           }
           return args.og_string.substring(0, args.index) + args.add_string + args.og_string.substring(args.index);
+        }
+
+        return_null(args) {
+          return null;
+        }
+        
+        return_tab(args) {
+          return '\t';
         }
 
       }
