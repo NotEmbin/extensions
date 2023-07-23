@@ -1,5 +1,5 @@
-function scratch_mod(value, mod) {
-    var n = value
+function scratch_modulo(value, mod) {
+    var n = value;
     let return_value = n % mod;
     if (return_value / mod < 0) return_value += mod;
     return return_value; 
@@ -7,23 +7,50 @@ function scratch_mod(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const version = 'v1.5.2';
+    const embin_utils_version = 'v1.6.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
       throw new Error('This extension must run unsandboxed');
     }
 
+    function action_reporter(a, utility) {
+      if (a == 'run green flag') {utility.runtime.greenFlag();}
+      if (a == 'green flag') {utility.runtime.greenFlag();}
+      if (a == 'clear console') {console.clear();}
+      if (a == 'return true') return true;
+      if (a == 'return false') return false;
+      if (a == 'return null') return null;
+      if (a == 'return nothing') return '';
+      if (a == 'return yes') return 'Yes';
+      if (a == 'return no') return 'No';
+      if (a == 'true') return true;
+      if (a == 'false') return false;
+      if (a == 'null') return null;
+      if (a == 'nothing') return '';
+      if (a == 'yes') return 'Yes';
+      if (a == 'no') return 'No';
+      if (a == 'stop project') {utility.stopAll();}
+      if (a == 'stop script') {utility.stopThisScript();}
+      return;
+    }
+
     const argbuffer = '#';
     const hide_legacy_blocks = true;
+    const is_packaged = Scratch.vm.runtime.isPackaged;
+    const inff = (777 ** 777);
+    const nnaann = (inff - inff);
+    var fallback_costume_name = 'fallback';
 
     class EmbinUtils {
         getInfo() {
         return {
             id: 'embinutils',
             name: 'Embin\'s Utils',
-            color1: '#E62CB1',
-            color2: '#C72398',
+            color3: '#E62CB1',
+            color1: '#4A0031',
+            //color2: '#C72398',
+            color2: '#1F0215',
             blocks: [
             {
                 opcode: 'return_version',
@@ -62,6 +89,12 @@ function scratch_mod(value, mod) {
                 text: 'false'
             },
             {
+              opcode: 'return_is_packaged',
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: true,
+              text: 'is project packaged?'
+            },
+            {
                 opcode: 'strictly_equals',
                 blockType: Scratch.BlockType.BOOLEAN,
                 text: '[one] === [two]',
@@ -76,6 +109,21 @@ function scratch_mod(value, mod) {
                 }
               }
             },
+            {
+              opcode: 'return_boolean',
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: true,
+              text: '[anything]',
+              arguments: {
+                anything: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Hello'
+                }
+              }
+            },
+            
+            '---',
+
             {
                 opcode: 'return_newline',
                 blockType: Scratch.BlockType.REPORTER,
@@ -94,6 +142,21 @@ function scratch_mod(value, mod) {
               disableMonitor: true,
               text: 'null'
             },
+            {
+              opcode: 'return_infinity',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'Infinity'
+            },
+            {
+              opcode: 'return_nan',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'NaN'
+            },
+
+            '---',
+
             {
                 opcode: 'string_split',
                 blockType: Scratch.BlockType.REPORTER,
@@ -148,6 +211,17 @@ function scratch_mod(value, mod) {
               }
             },
             {
+              opcode: 'format_json',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'format [jjson]',
+              arguments: {
+                jjson: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ''
+                }
+              }
+            },
+            {
                 opcode: 'if_else_green_flag_reporter',
                 blockType: Scratch.BlockType.REPORTER,
                 text: 'OLD | if [if] then [then] else run green flag',
@@ -176,7 +250,27 @@ function scratch_mod(value, mod) {
               },
                 act: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'stop script',
+                  defaultValue: 'run green flag',
+                  menu: 'if_else_action_menu'
+                }
+              }
+            },
+            {
+              opcode: 'if_else_double_action_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'if [if] then [actt] else [actf]',
+              arguments: {
+                if: {
+                  type: Scratch.ArgumentType.BOOLEAN
+              },
+                actt: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'return yes',
+                  menu: 'if_else_action_menu'
+              },
+                actf: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'return no',
                   menu: 'if_else_action_menu'
                 }
               }
@@ -275,6 +369,17 @@ function scratch_mod(value, mod) {
               }
             },
             {
+              opcode: 'return_selected_costume',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: '[costume]',
+              arguments: {
+                costume: {
+                  type: Scratch.ArgumentType.COSTUME
+                }
+              }
+            },
+            {
               opcode: 'color_hex',
               blockType: Scratch.BlockType.REPORTER,
               text: 'color [color]',
@@ -314,6 +419,55 @@ function scratch_mod(value, mod) {
               opcode: 'clear_console',
               blockType: Scratch.BlockType.COMMAND,
               text: 'clear console'
+            },
+
+            '---',
+
+            {
+              opcode: 'return_fallback_costume',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'fallback costume'
+            },
+            {
+              opcode: 'costume_attribute',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              hideFromPalette: true,
+              text: '[attribute] of [costume]',
+              arguments: {
+                attribute: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: 'costume_attribute_menu'
+                },
+                costume: {
+                  type: Scratch.ArgumentType.COSTUME
+                }
+              }
+            },
+            {
+              opcode: 'set_fallback_costume_to',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set fallback costume to [fcostume]',
+              disableMonitor: true,
+              arguments: {
+                fcostume: {
+                  type: Scratch.ArgumentType.COSTUME,
+                  defaultValue: 'fallback'
+                }
+              }
+            },
+            {
+              opcode: 'set_costume_to',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set costume to [new_costume]',
+              disableMonitor: true,
+              hideFromPalette: true,
+              arguments: {
+                new_costume: {
+                  type: Scratch.ArgumentType.COSTUME
+                }
+              }
             },
 
             '---',
@@ -405,16 +559,39 @@ function scratch_mod(value, mod) {
                   'return true',
                   'return false',
                   'return null',
+                  'return yes',
+                  'return no',
                   'stop project',
                   'stop script'
                 ]
-              }
+              },
+              costume_attribute_menu: {
+                acceptReporters: false,
+                items: [
+                  {
+                    text: 'costume width',
+                    value: 'width'
+                  },
+                  {
+                    text: 'costume height',
+                    value: 'height'
+                  },
+                  {
+                    text: 'rotation center x',
+                    value: 'rotationCenterX'
+                  },
+                  {
+                    text: 'rotation center y',
+                    value: 'rotationCenterY'
+                  }
+                ]
+              },
             }
           };
         }
   
         return_version() {
-            return version;
+            return embin_utils_version;
         }
 
         return_true() {
@@ -434,34 +611,34 @@ function scratch_mod(value, mod) {
         }
 
         unsigned_8(args) {
-            return Math.round(scratch_mod(args.num, (2 ** 8)));
+            return Math.round(scratch_modulo(args.num, (2 ** 8)));
         }
 
         unsigned_16(args) {
-            return Math.round(scratch_mod(args.num, (2 ** 16)));
+            return Math.round(scratch_modulo(args.num, (2 ** 16)));
         }
 
         unsigned_32(args) {
-            return Math.round(scratch_mod(args.num, (2 ** 32)));
+            return Math.round(scratch_modulo(args.num, (2 ** 32)));
         }
 
         signed_8(args) {
             var a = args.num - (2 ** 7);
-            var b = scratch_mod(a, (2 ** 8));
+            var b = scratch_modulo(a, (2 ** 8));
             let value = b - (2 ** 7);
             return Math.round(value);
         }
 
         signed_16(args) {
             var a = args.num - (2 ** 15);
-            var b = scratch_mod(a, (2 ** 16));
+            var b = scratch_modulo(a, (2 ** 16));
             let value = b - (2 ** 15);
             return Math.round(value);
         }
 
         signed_32(args) {
             var a = args.num - (2 ** 31);
-            var b = scratch_mod(a, (2 ** 32));
+            var b = scratch_modulo(a, (2 ** 32));
             let value = b - (2 ** 31);
             return Math.round(value);
         }
@@ -513,7 +690,7 @@ function scratch_mod(value, mod) {
         }
 
         join_newline(args) {
-          return String(args.thing_1) + '\n' + String(args.thing_2)
+          return String(args.thing_1) + '\n' + String(args.thing_2);
         }
 
         convert_to_id(args) {
@@ -530,19 +707,7 @@ function scratch_mod(value, mod) {
 
         if_else_action_reporter(args, util) {
           if (args.if) return args.then;
-          if (args.act == 'run green flag') {util.runtime.greenFlag();}
-          if (args.act == 'green flag') {util.runtime.greenFlag();}
-          if (args.act == 'clear console') {console.clear();}
-          if (args.act == 'return true') return true;
-          if (args.act == 'return false') return false;
-          if (args.act == 'return null') return null;
-          if (args.act == 'return nothing') return '';
-          if (args.act == 'true') return true;
-          if (args.act == 'false') return false;
-          if (args.act == 'null') return null;
-          if (args.act == 'nothing') return '';
-          if (args.act == 'stop project') {util.stopAll();}
-          if (args.act == 'stop script') {util.stopThisScript();}
+          return action_reporter(args.act, util);
           //return null; 
         }
 
@@ -577,15 +742,16 @@ function scratch_mod(value, mod) {
         }
 
         insert_in_string(args) {
-          if (args.index > args.og_string.length) {
-            buffer = argbuffer.repeat(args.index - args.og_string.length)
-            args.og_string += buffer;
+          let og_string = String(args.og_string);
+          if (args.index > og_string.length) {
+            buffer = argbuffer.repeat(args.index - og_string.length)
+            og_string += buffer;
           } else if (args.index < 0) {
             buffer = argbuffer.repeat(args.index * -1)
-            args.og_string = buffer + args.og_string;
+            og_string = buffer + og_string;
             args.index = 0;
           }
-          return args.og_string.substring(0, args.index) + args.add_string + args.og_string.substring(args.index);
+          return og_string.substring(0, args.index) + args.add_string + og_string.substring(args.index);
         }
 
         return_null(args) {
@@ -594,6 +760,112 @@ function scratch_mod(value, mod) {
         
         return_tab(args) {
           return '\t';
+        }
+
+        return_is_packaged(args) {
+          return is_packaged;
+        }
+
+        if_else_double_action_reporter(args, util) {
+          if (args.if) {
+            return action_reporter(args.actt, util);
+          } else {
+            return action_reporter(args.actf, util);
+          }
+        }
+
+        return_boolean(args) {
+          return args.anything;
+        }
+
+        return_nan(args) {
+          return nnaann;
+          //return ((777 ** 777) - (777 ** 777));
+        }
+
+        return_infinity(args) {
+          return inff;
+          //return (777 ** 777);
+        }
+
+        format_json(args) {
+          var new_string = args.jjson;
+          var new_string = new_string.replaceAll('\n', '');
+          var new_string = new_string.replaceAll('\t', '');
+          return new_string;
+        }
+
+        costume_attribute(args, util) {
+          let costume_index = this.getCostumeInput(args.costume, util.target);
+          let costume = util.target.sprite.costumes[costume_index];
+          if (!costume) {
+            console.error('Costume doesn\'t exist');
+            return 0;
+          }
+    
+          let attribute = args.attribute;
+          if (attribute === 'width') {
+            return Math.ceil(Scratch.Cast.toNumber(costume.size[0]));
+          } else if (attribute === 'height') {
+            return Math.ceil(Scratch.Cast.toNumber(costume.size[1]));
+          } else if (attribute === 'rotationCenterX') {
+            return costume.rotationCenterX;
+          } else if (attribute === 'rotationCenterY') {
+            return costume.rotationCenterY;
+          } else {
+            return '';
+          }
+        }
+
+        _setCostume (target, requestedCostume, optZeroIndex) { // used by compiler
+          if (typeof requestedCostume === 'number') {
+              // Numbers should be treated as costume indices, always
+              target.setCostume(optZeroIndex ? requestedCostume : requestedCostume - 1);
+          } else {
+              // Strings should be treated as costume names, where possible
+              const costumeIndex = target.getCostumeIndexByName(requestedCostume.toString());
+  
+              if (costumeIndex !== -1) {
+                  target.setCostume(costumeIndex);
+              } else if (requestedCostume === 'next costume') {
+                  target.setCostume(target.currentCostume + 1);
+              } else if (requestedCostume === 'previous costume') {
+                  target.setCostume(target.currentCostume - 1);
+              // Try to cast the string to a number (and treat it as a costume index)
+              // Pure whitespace should not be treated as a number
+              // Note: isNaN will cast the string to a number before checking if it's NaN
+              } else if (!(isNaN(requestedCostume) || Cast.isWhiteSpace(requestedCostume))) {
+                  target.setCostume(optZeroIndex ? Number(requestedCostume) : Number(requestedCostume) - 1);
+              }
+          }
+  
+          // Per 2.0, 'switch costume' can't start threads even in the Stage.
+          return [];
+        } 
+
+        set_costume_to (args, util) {
+          let costume_index = this.getCostumeInput(args.costume, util.target);
+          let costume = util.target.sprite.costumes[costume_index];
+          if (!costume) {
+            this._setCostume(util.target, fallback_costume_name);
+            return;
+          } else {
+            this._setCostume(util.target, args.new_costume);
+            return;
+          }
+        }
+
+        return_fallback_costume (args) {
+          return fallback_costume_name;
+        }
+
+        set_fallback_costume_to (args) {
+          fallback_costume_name = args.fcostume;
+          return;
+        }
+
+        return_selected_costume (args) {
+          return args.costume;
         }
 
       }
