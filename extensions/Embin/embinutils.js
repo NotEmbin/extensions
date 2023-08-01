@@ -7,12 +7,14 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.6.0';
+    const embin_utils_version = 'v1.6.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
       throw new Error('This extension must run unsandboxed');
     }
+
+    const vm = Scratch.vm;
 
     function action_reporter(a, utility) {
       if (a == 'run green flag') {utility.runtime.greenFlag();}
@@ -117,7 +119,7 @@ function scratch_modulo(value, mod) {
               arguments: {
                 anything: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'Hello'
+                  defaultValue: 'Howdy'
                 }
               }
             },
@@ -473,6 +475,22 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
+              opcode: 'get_list_as_json',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get contents of list [list] as array',
+              hideFromPalette: true,
+              arguments: {
+                  list: {
+                      type: Scratch.ArgumentType.STRING,
+                      defaultValue: 'select a list',
+                      menu: 'lists'
+                  }
+              }
+            },
+
+            '---',
+
+            {
                 opcode: 'unsigned_8',
                 blockType: Scratch.BlockType.REPORTER,
                 text: '8-bit unsigned [num]',
@@ -586,8 +604,32 @@ function scratch_modulo(value, mod) {
                   }
                 ]
               },
+              lists: 'get_lists'
             }
           };
+        }
+
+        get_lists () {
+          const variables = [].concat(
+              Object.values(vm.runtime.getTargetForStage().variables),
+              Object.values(vm.editingTarget.variables)
+          );
+          const lists = variables.filter(i => i.type === 'list');
+          if (lists.length === 0) {
+              return [
+                  {
+                      text: 'select a list',
+                      value: 'select a list'
+                  }
+              ];
+          }
+          return lists.map(i => ({
+              text: i.name,
+              value: JSON.stringify({
+                  id: i.id,
+                  name: i.name
+              })
+          }));
         }
   
         return_version() {
@@ -866,6 +908,18 @@ function scratch_modulo(value, mod) {
 
         return_selected_costume (args) {
           return args.costume;
+        }
+
+        get_list_as_json (args, util) {
+          let list;
+          try {
+            list = JSON.parse(args.list);
+          } catch {
+            return;
+          }
+          let content = util.target.lookupOrCreateList(list.id, list.name).value;
+  
+          return JSON.stringify(content.map(x => stringToEqivalint(x)));
         }
 
       }
