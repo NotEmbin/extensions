@@ -7,7 +7,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.6.1';
+    const embin_utils_version = 'v1.7.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -15,6 +15,7 @@ function scratch_modulo(value, mod) {
     }
 
     const vm = Scratch.vm;
+    const Cast = Scratch.Cast;
 
     function action_reporter(a, utility) {
       if (a == 'run green flag') {utility.runtime.greenFlag();}
@@ -37,7 +38,7 @@ function scratch_modulo(value, mod) {
       return;
     }
 
-    const argbuffer = '#';
+    //const argbuffer = '#';
     const hide_legacy_blocks = true;
     const is_packaged = Scratch.vm.runtime.isPackaged;
     const inff = (777 ** 777);
@@ -91,10 +92,35 @@ function scratch_modulo(value, mod) {
                 text: 'false'
             },
             {
+                opcode: 'return_random',
+                blockType: Scratch.BlockType.BOOLEAN,
+                disableMonitor: true,
+                text: 'random'
+            },
+            {
+              opcode: 'return_boolean_from_input',
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: true,
+              text: '[opt]',
+              arguments: {
+                opt: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'true',
+                  menu: 'boolean_selection'
+                }
+              }
+            },
+            {
               opcode: 'return_is_packaged',
               blockType: Scratch.BlockType.BOOLEAN,
               disableMonitor: true,
               text: 'is project packaged?'
+            },
+            {
+              opcode: 'window_focused',
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: true,
+              text: 'is user focused on this window?'
             },
             {
                 opcode: 'strictly_equals',
@@ -155,6 +181,18 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
               text: 'NaN'
+            },
+            {
+              opcode: 'get_window_name',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'get window title'
+            },
+            {
+              opcode: 'return_math_random_function',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Math.random()'
             },
 
             '---',
@@ -313,7 +351,7 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'insert_in_string',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'insert [add_string] into [og_string] at [index]',
+              text: 'insert [add_string] into [og_string] at [index]', // w/ buffer [buffer]',
               arguments: {
                 add_string: {
                   type: Scratch.ArgumentType.STRING,
@@ -327,6 +365,10 @@ function scratch_modulo(value, mod) {
                   type: Scratch.ArgumentType.NUMBER,
                   defaultValue: 2
                 }
+                //buffer: {
+                //  type: Scratch.ArgumentType.STRING,
+                //  defaultValue: '#'
+                //}
               }
             },
             {
@@ -399,6 +441,24 @@ function scratch_modulo(value, mod) {
                 opcode: 'green_flag',
                 blockType: Scratch.BlockType.COMMAND,
                 text: 'run green flag'
+            },
+            {
+              opcode: 'close_window',
+              blockType: Scratch.BlockType.COMMAND,
+              isTerminal: true,
+              text: 'close window'
+            },
+            {
+              opcode: 'set_window_name',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set window title to [name]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Awesome Project'
+                }
+              }
             },
             {
               opcode: 'console_log',
@@ -604,7 +664,11 @@ function scratch_modulo(value, mod) {
                   }
                 ]
               },
-              lists: 'get_lists'
+              lists: 'get_lists',
+              boolean_selection: {
+                acceptReporters: true,
+                items: ['true', 'false', 'random']
+              },
             }
           };
         }
@@ -633,86 +697,86 @@ function scratch_modulo(value, mod) {
         }
   
         return_version() {
-            return embin_utils_version;
+          return embin_utils_version;
         }
 
         return_true() {
-            return true;
+          return true;
         }
 
         return_false() {
-            return false;
+          return false;
         }
 
         string_split (args) {
-            var input_1 = (args.numof - 1);
-            var input_2 = String(args.string);
-            var input_3 = args.deli;
-            var output = input_2.split(input_3)[input_1] || '';
-            return output;
+          var input_1 = (args.numof - 1);
+          var input_2 = String(args.string);
+          var input_3 = args.deli;
+          var output = input_2.split(input_3)[input_1] || '';
+          return output;
         }
 
         unsigned_8(args) {
-            return Math.round(scratch_modulo(args.num, (2 ** 8)));
+          return Math.round(scratch_modulo(args.num, (2 ** 8)));
         }
 
         unsigned_16(args) {
-            return Math.round(scratch_modulo(args.num, (2 ** 16)));
+          return Math.round(scratch_modulo(args.num, (2 ** 16)));
         }
 
         unsigned_32(args) {
-            return Math.round(scratch_modulo(args.num, (2 ** 32)));
+          return Math.round(scratch_modulo(args.num, (2 ** 32)));
         }
 
         signed_8(args) {
-            var a = args.num - (2 ** 7);
-            var b = scratch_modulo(a, (2 ** 8));
-            let value = b - (2 ** 7);
-            return Math.round(value);
+          var a = args.num - (2 ** 7);
+          var b = scratch_modulo(a, (2 ** 8));
+          let value = b - (2 ** 7);
+          return Math.round(value);
         }
 
         signed_16(args) {
-            var a = args.num - (2 ** 15);
-            var b = scratch_modulo(a, (2 ** 16));
-            let value = b - (2 ** 15);
-            return Math.round(value);
+          var a = args.num - (2 ** 15);
+          var b = scratch_modulo(a, (2 ** 16));
+          let value = b - (2 ** 15);
+          return Math.round(value);
         }
 
         signed_32(args) {
-            var a = args.num - (2 ** 31);
-            var b = scratch_modulo(a, (2 ** 32));
-            let value = b - (2 ** 31);
-            return Math.round(value);
+          var a = args.num - (2 ** 31);
+          var b = scratch_modulo(a, (2 ** 32));
+          let value = b - (2 ** 31);
+          return Math.round(value);
         }
 
         convert_to_string(args) {
-            return String(args.thing);
+          return String(args.thing);
         }
 
         convert_to_number(args) {
-            return Number(args.thing);
+          return Number(args.thing);
         }
 
         strictly_equals(args) {
-            return args.one === args.two;
+          return args.one === args.two;
         }
 
         green_flag(args, util) {
-            util.runtime.greenFlag();
+          util.runtime.greenFlag();
         }
 
         return_newline(args) {
-            return '\n';
+          return '\n';
         }
 
         if_else_green_flag_reporter(args, util) {
-            if (args.if) return args.then;
-            util.runtime.greenFlag(); 
+          if (args.if) return args.then;
+          util.runtime.greenFlag(); 
         }
 
         if_else_reporter(args) {
-            if (args.if) return args.then;
-            return args.else; 
+          if (args.if) return args.then;
+          return args.else; 
         }
 
         console_log(args) {
@@ -784,13 +848,15 @@ function scratch_modulo(value, mod) {
         }
 
         insert_in_string(args) {
+          let og_string_length = String(args.og_string).length;
           let og_string = String(args.og_string);
-          if (args.index > og_string.length) {
-            buffer = argbuffer.repeat(args.index - og_string.length)
-            og_string += buffer;
+          let argbuffer = '#'; //String(args.buffer);
+          if (args.index > og_string_length) {
+            bbuffer = argbuffer.repeat(args.index - og_string.length);
+            og_string = og_string + bbuffer;
           } else if (args.index < 0) {
-            buffer = argbuffer.repeat(args.index * -1)
-            og_string = buffer + og_string;
+            bbuffer = argbuffer.repeat(args.index * -1);
+            og_string = bbuffer + og_string;
             args.index = 0;
           }
           return og_string.substring(0, args.index) + args.add_string + og_string.substring(args.index);
@@ -920,6 +986,51 @@ function scratch_modulo(value, mod) {
           let content = util.target.lookupOrCreateList(list.id, list.name).value;
   
           return JSON.stringify(content.map(x => stringToEqivalint(x)));
+        }
+
+        return_random (args) {
+          if (Math.random() < 0.5) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+
+        return_boolean_from_input (args) {
+          if (args.opt == 'true') {
+            return true;
+          } else if (args.opt == 'false') {
+            return false;
+          } else if (args.opt == 'random') {
+            if (Math.random() < 0.5) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+
+        return_math_random_function (args) {
+          return Math.random();
+        }
+
+        close_window (args) {
+          window.close();
+        }
+
+        set_window_name (args) {
+          const wname = Cast.toString(args.name);
+          document.title = wname
+        }
+
+        get_window_name (args) {
+          return document.title;
+        }
+
+        window_focused (args) {
+          return document.hasFocus();
         }
 
       }
