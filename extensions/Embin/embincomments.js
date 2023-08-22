@@ -1,7 +1,7 @@
 (function (Scratch) {
     'use strict';
 
-    const embin_comments_version = 'v1.0.0';
+    const embin_comments_version = 'v1.0.1';
     const branch_true = true;
   
     class EmbinComments {
@@ -12,9 +12,9 @@
                 //color1: '#877e34',
                 //color3: '#e4db8c',
                 //color2: '#c6be79',
-                color1: '#897900',
+                color1: '#4A4000',
                 color2: '#6B5E00',
-                color3: '#EACD00',
+                color3: '#FFD500',
                 blocks: [
                     {
                         opcode: 'return_version',
