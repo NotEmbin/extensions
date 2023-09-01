@@ -1,7 +1,12 @@
+// Name: Embin's Comments
+// ID: embincomments
+// Description: Comment blocks
+// By: Embin <https://scratch.mit.edu/users/Embin/>
+
 (function (Scratch) {
     'use strict';
 
-    const embin_comments_version = 'v1.0.1';
+    const embin_comments_version = 'v1.1.0';
     const branch_true = true;
   
     class EmbinComments {
@@ -61,6 +66,8 @@
                         opcode: 'comment_reporter',
                         blockType: Scratch.BlockType.REPORTER,
                         text: '[value] // [comment]',
+                        allowDropAnywhere: true,
+                        disableMonitor: true,
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
@@ -90,6 +97,7 @@
                         opcode: 'comment_boolean_reporter',
                         blockType: Scratch.BlockType.BOOLEAN,
                         text: '[value2] // [comment]',
+                        hideFromPalette: true,
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
@@ -100,6 +108,17 @@
                                 defaultValue: 'value'
                             }
                         }
+                    },
+                    {
+                        opcode: "comment_conditional_tw",
+                        blockType: Scratch.BlockType.CONDITIONAL,
+                        text: "// [COMMENT]",
+                        arguments: {
+                            COMMENT: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "comment",
+                            },
+                        },
                     },
                     {
                         opcode: 'comment_color',
@@ -221,6 +240,10 @@
 
         comment_boolean_reporter (args) {
             return args.value2;
+        }
+
+        comment_conditional_tw (args, util) {
+            return true;
         }
 
         /*
