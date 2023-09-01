@@ -1,3 +1,8 @@
+// Name: Embin Everything
+// ID: embineverything
+// Description: All of Embin's extensions in one.
+// By: Embin <https://scratch.mit.edu/users/Embin/>
+
 function scratch_modulo(value, mod) {
     var n = value;
     let return_value = n % mod;
@@ -7,10 +12,10 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_everything_version = 'v1.0.0';
+    const embin_everything_version = 'v1.1.0';
 
-    const embin_utils_version = 'v1.7.0';
-    const embin_comments_version = 'v1.0.1';
+    const embin_utils_version = 'v1.8.0';
+    const embin_comments_version = 'v1.1.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -40,6 +45,13 @@ function scratch_modulo(value, mod) {
       if (a == 'stop script') {utility.stopThisScript();}
       return;
     }
+
+    // Credit to skyhigh173 for the idea of this
+    const label = (name, hidden) => ({
+      blockType: Scratch.BlockType.LABEL,
+      text: name,
+      hideFromPalette: hidden,
+    });
 
     //const argbuffer = '#';
     const hide_legacy_blocks = true;
@@ -93,6 +105,8 @@ function scratch_modulo(value, mod) {
             },
 
             '---',
+
+            label("Embin's Utils", false),
 
             {
                 opcode: 'return_true',
@@ -149,6 +163,21 @@ function scratch_modulo(value, mod) {
                   two: {
                     type: Scratch.ArgumentType.STRING,
                     defaultValue: 'hey'
+                }
+              }
+            },
+            {
+              opcode: 'not_equals',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: '[one] ≠ [two]',
+              arguments: {
+                one: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hello'
+                },
+                two: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hey'
                 }
               }
             },
@@ -232,6 +261,101 @@ function scratch_modulo(value, mod) {
               }
             },
             {
+              opcode: 'string_replace_all',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'in [base] replace all [r] with [w]',
+              arguments: {
+                base: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'foo bar foo bar'
+                },
+                r: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'foo'
+                },
+                w: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'goop'
+                }
+              }
+            },
+            {
+              opcode: 'string_replace_first',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'in [base] replace first [r] with [w]',
+              arguments: {
+                base: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'the foo foo bar'
+                },
+                r: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'foo'
+                },
+                w: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'goop'
+                }
+              }
+            },
+            {
+              opcode: 'join_newline',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'join [thing_1] \\n [thing_2]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                }
+              }
+            },
+            {
+              opcode: 'join_three',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'join [thing_1] [thing_2] [thing_3]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                },
+                thing_3: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'c'
+                }
+              }
+            },
+            {
+              opcode: 'insert_in_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'insert [add_string] into [og_string] at [index]', // w/ buffer [buffer]',
+              arguments: {
+                add_string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ","
+                },
+                og_string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "12345"
+                },
+                index: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 2
+                }
+                //buffer: {
+                //  type: Scratch.ArgumentType.STRING,
+                //  defaultValue: '#'
+                //}
+              }
+            },
+            {
                 opcode: 'convert_to_string',
                 blockType: Scratch.BlockType.REPORTER,
                 text: '[thing] to string',
@@ -273,21 +397,6 @@ function scratch_modulo(value, mod) {
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: ''
-                }
-              }
-            },
-            {
-                opcode: 'if_else_green_flag_reporter',
-                blockType: Scratch.BlockType.REPORTER,
-                text: 'OLD | if [if] then [then] else run green flag',
-                hideFromPalette: hide_legacy_blocks,
-                arguments: {
-                  if: {
-                    type: Scratch.ArgumentType.BOOLEAN
-                },
-                  then: {
-                      type: Scratch.ArgumentType.STRING,
-                      defaultValue: 'abc'
                 }
               }
             },
@@ -346,44 +455,6 @@ function scratch_modulo(value, mod) {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'xyz'
                 }
-              }
-            },
-            {
-              opcode: 'join_newline',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'join [thing_1] \\n [thing_2]',
-              arguments: {
-                thing_1: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'a'
-                },
-                thing_2: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'b'
-                }
-              }
-            },
-            {
-              opcode: 'insert_in_string',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'insert [add_string] into [og_string] at [index]', // w/ buffer [buffer]',
-              arguments: {
-                add_string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: ","
-                },
-                og_string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "12345"
-                },
-                index: {
-                  type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: 2
-                }
-                //buffer: {
-                //  type: Scratch.ArgumentType.STRING,
-                //  defaultValue: '#'
-                //}
               }
             },
             {
@@ -550,6 +621,34 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
+              opcode: 'js_stack',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'js: [script]',
+              disableMonitor: true,
+              arguments: {
+                script: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'alert(\'Hey\');'
+                }
+              }
+            },
+            {
+              opcode: 'js_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'js: [script]',
+              disableMonitor: true,
+              allowDropAnywhere: true,
+              arguments: {
+                script: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Math.random();'
+                }
+              }
+            },
+
+            '---',
+
+            {
               opcode: 'get_list_as_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'get contents of list [list] as array',
@@ -638,6 +737,8 @@ function scratch_modulo(value, mod) {
 
             '---',
 
+            label("Embin's Comments", false),
+
             {
                 opcode: 'comment_hat',
                 blockType: Scratch.BlockType.HAT,
@@ -677,6 +778,8 @@ function scratch_modulo(value, mod) {
                 opcode: 'comment_reporter',
                 blockType: Scratch.BlockType.REPORTER,
                 text: '[value] // [comment]',
+                allowDropAnywhere: true,
+                disableMonitor: true,
                 arguments: {
                     comment: {
                         type: Scratch.ArgumentType.STRING,
@@ -703,19 +806,15 @@ function scratch_modulo(value, mod) {
                 }
             },
             {
-                opcode: 'comment_boolean_reporter',
-                blockType: Scratch.BlockType.BOOLEAN,
-                text: '[value2] // [comment]',
-                arguments: {
-                    comment: {
-                        type: Scratch.ArgumentType.STRING,
-                        defaultValue: 'comment'
-                    },
-                    value2: {
-                        type: Scratch.ArgumentType.STRING,
-                        defaultValue: 'value'
-                    }
-                }
+              opcode: "comment_conditional_tw",
+              blockType: Scratch.BlockType.CONDITIONAL,
+              text: "// [COMMENT]",
+              arguments: {
+                COMMENT: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "comment",
+                },
+              },
             },
             {
                 opcode: 'comment_color',
@@ -776,6 +875,42 @@ function scratch_modulo(value, mod) {
                         defaultValue: ''
                     }
                 }
+            },
+
+            '---',
+            
+            label('Hidden/Obsolete/Cut blocks', false),
+
+            {
+              opcode: 'if_else_green_flag_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'if [if] then [then] else run green flag',
+              hideFromPalette: false,
+              arguments: {
+                if: {
+                  type: Scratch.ArgumentType.BOOLEAN
+                },
+                then: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'abc'
+                }
+              }
+            },
+            {
+              opcode: 'comment_boolean_reporter',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: '[value2] // [comment]',
+              hideFromPalette: false,
+              arguments: {
+                comment: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'comment'
+                },
+                value2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'value'
+                }
+              }
             },
 
 
@@ -1195,55 +1330,83 @@ function scratch_modulo(value, mod) {
         }
   
         comment_hat () {
-            // no-op
+          // no-op
         }
   
         comment_block () {
-            // no-op
+          // no-op
         }
   
         comment_reporter (args) {
-            return args.value;
+          return args.value;
         }
   
         comment_boolean (args) {
-            return args.value || false;
+          return args.value || false;
         }
 
         comment_color (args) {
-            return args.color;
+          return args.color;
         }
 
         comment_angle (args) {
-            return args.angle;
+          return args.angle;
         }
 
         comment_matrix (args) {
-            return args.matrix;
+          return args.matrix;
         }
 
         comment_note (args) {
-            return args.note;
+          return args.note;
         }
 
         comment_block_terminal () {
-            // no-op
+          // no-op
         }
 
         comment_boolean_reporter (args) {
-            return args.value2;
+          return args.value2;
         }
 
         return_version () {
-            return embin_everything_version;
+          return embin_everything_version;
         }
 
         return_utils_version () {
-            return embin_utils_version;
+          return embin_utils_version;
         }
 
         return_comment_version () {
-            return embin_comments_version;
+          return embin_comments_version;
+        }
+
+        js_stack (args) {
+          eval(String(args.script));
+        }
+
+        js_reporter (args) {
+          return eval(String(args.script));
+        }
+
+        comment_conditional_tw (args, util) {
+          return true;
+        }
+
+        not_equals (args) {
+          return args.one != args.two;
+        }
+
+        join_three (args) {
+          return String(args.thing_1) + String(args.thing_2) + String(args.thing_3);
+        }
+
+        string_replace_all (args) {
+          return String(args.base).replaceAll(args.r, args.w);
+        }
+
+        string_replace_first (args) {
+          return String(args.base).replace(args.r, args.w);
         }
 
       }
