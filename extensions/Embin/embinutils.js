@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.10.0';
+    const embin_utils_version = 'v1.11.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -274,6 +274,47 @@ function scratch_modulo(value, mod) {
                 w: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'goop'
+                }
+              }
+            },
+            {
+              opcode: 'letters_of',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'letters [num1] to [num2] of [string]',
+              arguments: {
+                num1: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1
+                },
+                num2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 4
+                },
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Hello'
+                }
+              }
+            },
+            {
+              opcode: 'remove_first_character_in_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'remove first character in [string]',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '#stairs'
+                }
+              }
+            },
+            {
+              opcode: 'remove_last_character_in_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'remove last character in [string]',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Hello!'
                 }
               }
             },
@@ -1190,6 +1231,25 @@ function scratch_modulo(value, mod) {
 
         return_uuid (args) {
           return crypto.randomUUID();
+        }
+
+        letters_of (args) {
+          let real_string = String(args.string);
+          let num1 = Number(args.num1) || 0;
+          let num2 = Number(args.num2) || 0;
+          return real_string.substring((num1 - 1), num2);
+        }
+
+        remove_first_character_in_string (args) {
+          let real_string = String(args.string);
+          let max = real_string.length;
+          return real_string.substring(1, max);
+        }
+
+        remove_last_character_in_string (args) {
+          let real_string = String(args.string);
+          let max = real_string.length;
+          return real_string.substring(0, (max - 1));
         }
 
       }
