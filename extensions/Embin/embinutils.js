@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.11.0';
+    const embin_utils_version = 'v1.12.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -620,6 +620,30 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.COMMAND,
               text: 'clear console'
             },
+            {
+              opcode: 'throw_error',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'throw error [error]',
+              disableMonitor: true,
+              arguments: {
+                error: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Oopsie!'
+                }
+              }
+            },
+            {
+              opcode: 'throw_error_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'throw error [error]',
+              disableMonitor: true,
+              arguments: {
+                error: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Oopsie!'
+                }
+              }
+            },
 
             '---',
 
@@ -1203,10 +1227,12 @@ function scratch_modulo(value, mod) {
 
         js_stack (args) {
           let js_stack_dummy = "No longer supported";
+          throw new Error("This block is no longer supported");
         }
 
         js_reporter (args) {
-          return "This block is no longer supported.";
+          //return "This block is no longer supported.";
+          throw new Error("This block is no longer supported");
         }
 
         not_equals(args) {
@@ -1250,6 +1276,14 @@ function scratch_modulo(value, mod) {
           let real_string = String(args.string);
           let max = real_string.length;
           return real_string.substring(0, (max - 1));
+        }
+
+        throw_error (args) {
+          throw new Error(args.error);
+        }
+
+        throw_error_reporter (args) {
+          throw new Error(args.error);
         }
 
       }
