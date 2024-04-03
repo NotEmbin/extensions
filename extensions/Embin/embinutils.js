@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.12.0';
+    const embin_utils_version = 'v1.13.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -21,6 +21,28 @@ function scratch_modulo(value, mod) {
 
     const vm = Scratch.vm;
     const Cast = Scratch.Cast;
+
+    let temp_vars = Object.create(null);
+
+    let character_tags = Object.create(null);
+    let enemy_tags = Object.create(null);
+    let attack_tags = Object.create(null);
+    let tile_tags = Object.create(null);
+    let entity_tags = Object.create(null);
+    let item_tags = Object.create(null);
+
+    function reset_temp_vars() {
+      temp_vars = Object.create(null);
+    }
+
+    function reset_all_tags() {
+      character_tags = Object.create(null);
+      enemy_tags = Object.create(null);
+      attack_tags = Object.create(null);
+      tile_tags = Object.create(null);
+      entity_tags = Object.create(null);
+      item_tags = Object.create(null);
+    }
 
     // js sha256 hashing algorithm by geraintluff (minified)
     var sha256=function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=Math.pow,g=f(2,32),h="length",i="",j=[],k=8*b[h],l=a.h=a.h||[],m=a.k=a.k||[],n=m[h],o={},p=2;64>n;p++)if(!o[p]){for(d=0;313>d;d+=p)o[d]=p;l[n]=f(p,.5)*g|0,m[n++]=f(p,1/3)*g|0}for(b+="\x80";b[h]%64-56;)b+="\x00";for(d=0;d<b[h];d++){if(e=b.charCodeAt(d),e>>8)return;j[d>>2]|=e<<(3-d)%4*8}for(j[j[h]]=k/g|0,j[j[h]]=k,e=0;e<j[h];){var q=j.slice(e,e+=16),r=l;for(l=l.slice(0,8),d=0;64>d;d++){var s=q[d-15],t=q[d-2],u=l[0],v=l[4],w=l[7]+(c(v,6)^c(v,11)^c(v,25))+(v&l[5]^~v&l[6])+m[d]+(q[d]=16>d?q[d]:q[d-16]+(c(s,7)^c(s,18)^s>>>3)+q[d-7]+(c(t,17)^c(t,19)^t>>>10)|0),x=(c(u,2)^c(u,13)^c(u,22))+(u&l[1]^u&l[2]^l[1]&l[2]);l=[w+x|0].concat(l),l[4]=l[4]+w|0}for(d=0;8>d;d++)l[d]=l[d]+r[d]|0}for(d=0;8>d;d++)for(e=3;e+1;e--){var y=l[d]>>8*e&255;i+=(16>y?0:"")+y.toString(16)}return i};
@@ -37,7 +59,7 @@ function scratch_modulo(value, mod) {
       if (a == 'return no') return 'No';
       if (a == 'true') return true;
       if (a == 'false') return false;
-      if (a == 'null') return null;
+      if (a == 'null') return 'null';
       if (a == 'nothing') return '';
       if (a == 'yes') return 'Yes';
       if (a == 'no') return 'No';
@@ -412,7 +434,7 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'format_json',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'format [jjson]',
+              text: 'minify JSON [jjson]',
               arguments: {
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
@@ -743,13 +765,109 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
-                opcode: 'unsigned_8',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '8-bit unsigned [num]',
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '-1'
+              opcode: 'set_tag',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set [tag_type]/[tag_id] tag to array [tag_contents]',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                },
+                tag_contents: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["fwb:freddy","fwb:bonnie"]'
+                }
+              }
+            },
+            {
+              opcode: 'add_to_tag',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'add [tag_addition] to [tag_type]/[tag_id] tag',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                },
+                tag_addition: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:chica'
+                }
+              }
+            },
+            {
+              opcode: 'get_tag',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [tag_type]/[tag_id] tag',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                }
+              }
+            },
+            {
+              opcode: 'does_tag_exist',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does [tag_type]/[tag_id] exist?',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                }
+              }
+            },
+            {
+              opcode: 'delete_specific_tag',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete [tag_type]/[tag_id] tag',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                }
+              }
+            },
+            {
+              opcode: 'delete_all_tags',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete all tags'
+            },
+
+            '---',
+
+            {
+              opcode: 'unsigned_8',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '8-bit unsigned [num]',
+              arguments: {
+                num: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '-1'
                 }
               }
             },
@@ -861,6 +979,46 @@ function scratch_modulo(value, mod) {
                 acceptReporters: true,
                 items: ['true', 'false', 'random']
               },
+              tag_types: {
+                acceptReporters: true,
+                items: [
+                  {
+                    text: 'characters',
+                    value: 'character'
+                  },
+                  {
+                    text: 'enemies',
+                    value: 'enemy'
+                  },
+                  {
+                    text: 'attacks',
+                    value: 'attack'
+                  },
+                  {
+                    text: 'tiles',
+                    value: 'tile'
+                  },
+                  {
+                    text: 'entities',
+                    value: 'entity'
+                  },
+                  {
+                    text: 'items',
+                    value: 'item'
+                  }
+                ]
+              },
+              tag_types_singular: {
+                acceptReporters: true,
+                items: [
+                  'character',
+                  'enemy',
+                  'attack',
+                  'tile',
+                  'entity',
+                  'item'
+                ]
+              }
             }
           };
         }
@@ -1055,7 +1213,7 @@ function scratch_modulo(value, mod) {
         }
 
         return_null(args) {
-          return null;
+          return "null";
         }
         
         return_tab(args) {
@@ -1226,7 +1384,7 @@ function scratch_modulo(value, mod) {
         }
 
         js_stack (args) {
-          let js_stack_dummy = "No longer supported";
+          //let js_stack_dummy = "No longer supported";
           throw new Error("This block is no longer supported");
         }
 
@@ -1286,7 +1444,261 @@ function scratch_modulo(value, mod) {
           throw new Error(args.error);
         }
 
-      }
+        is_json_valid (json) {
+          try {
+            JSON.parse(json);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        set_tag (args) {
+          //if (!this.is_json_valid({ json: args.tag_contents })) throw new Error("Contents not an array");
+          try {
+            if (!Array.isArray(JSON.parse(args.tag_contents))) throw new Error("Not an array");
+          } catch (error) {
+            throw new Error("Not an array");
+          }
+
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              character_tags[args.tag_id] = args.tag_contents;
+              break;
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              enemy_tags[args.tag_id] = args.tag_contents;
+              break;
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              attack_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            // tiles
+            case "tile":
+            case "tiles":
+              tile_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            // entities
+            case "entity":
+            case "entities":
+              entity_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            // items
+            case "item":
+            case "items":
+              item_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            default:
+              return;
+          }
+        }
+
+        get_tag (args) {
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              if (!(args.tag_id in character_tags)) return "";
+              return character_tags[args.tag_id];
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              if (!(args.tag_id in enemy_tags)) return "";
+              return enemy_tags[args.tag_id];
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              if (!(args.tag_id in attack_tags)) return "";
+              return attack_tags[args.tag_id];
+
+            // tiles
+            case "tile":
+            case "tiles":
+              if (!(args.tag_id in tile_tags)) return "";
+              return tile_tags[args.tag_id];
+
+            // entities
+            case "entity":
+            case "entities":
+              if (!(args.tag_id in entity_tags)) return "";
+              return entity_tags[args.tag_id];
+
+            // items
+            case "item":
+            case "items":
+              if (!(args.tag_id in item_tags)) return "";
+              return item_tags[args.tag_id];
+
+            default:
+              return "";
+          }
+        }
+
+        add_to_tag (args) {
+          let new_data;
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              if (!(args.tag_id in character_tags)) return;
+              new_data = JSON.parse(character_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              character_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              if (!(args.tag_id in enemy_tags)) return;
+              new_data = JSON.parse(enemy_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              enemy_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              if (!(args.tag_id in attack_tags)) return;
+              new_data = JSON.parse(attack_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              attack_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            // tiles
+            case "tile":
+            case "tiles":
+              if (!(args.tag_id in tile_tags)) return;
+              new_data = JSON.parse(tile_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              tile_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            // entities
+            case "entity":
+            case "entities":
+              if (!(args.tag_id in entity_tags)) return;
+              new_data = JSON.parse(entity_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              entity_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            // items
+            case "item":
+            case "items":
+              if (!(args.tag_id in item_tags)) return;
+              new_data = JSON.parse(item_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              item_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            default:
+              return;
+          }
+        }
+
+        does_tag_exist (args) {
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              if (!(args.tag_id in character_tags)) return false;
+              return true;
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              if (!(args.tag_id in enemy_tags)) return false;
+              return true;
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              if (!(args.tag_id in attack_tags)) return false;
+              return true;
+
+            // tiles
+            case "tile":
+            case "tiles":
+              if (!(args.tag_id in tile_tags)) return false;
+              return true;
+
+            // entities
+            case "entity":
+            case "entities":
+              if (!(args.tag_id in entity_tags)) return false;
+              return true;
+
+            // items
+            case "item":
+            case "items":
+              if (!(args.tag_id in item_tags)) return false;
+              return true;
+
+            default:
+              return false;
+          }
+        }
+
+        delete_all_tags (args) {
+          reset_all_tags();
+        }
+
+        delete_specific_tag (args) {
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              Reflect.deleteProperty(character_tags, args.tag_id);
+              break;
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              Reflect.deleteProperty(enemy_tags, args.tag_id);
+              break;
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              Reflect.deleteProperty(attack_tags, args.tag_id);
+              break;
+
+            // tiles
+            case "tile":
+            case "tiles":
+              Reflect.deleteProperty(tile_tags, args.tag_id);
+              break;
+
+            // entities
+            case "entity":
+            case "entities":
+              Reflect.deleteProperty(entity_tags, args.tag_id);
+              break;
+
+            // items
+            case "item":
+            case "items":
+              Reflect.deleteProperty(item_tags, args.tag_id);
+              break;
+
+            default:
+              return false;
+          }
+        }
+
+      } // end of blocks code
   
     Scratch.extensions.register(new EmbinUtils());
 })(Scratch);
