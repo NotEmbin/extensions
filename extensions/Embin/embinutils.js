@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.13.0';
+    const embin_utils_version = 'v1.14.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -143,15 +143,24 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'return_is_packaged',
               blockType: Scratch.BlockType.BOOLEAN,
-              disableMonitor: true,
+              disableMonitor: false,
               text: 'is project packaged?'
             },
             {
               opcode: 'window_focused',
               blockType: Scratch.BlockType.BOOLEAN,
-              disableMonitor: true,
+              disableMonitor: false,
               text: 'is user focused on this window?'
             },
+            {
+              opcode: "connected_to_internet",
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: false,
+              text: "connected to the internet?",
+            },
+
+            '---',
+
             {
                 opcode: 'strictly_equals',
                 blockType: Scratch.BlockType.BOOLEAN,
@@ -230,8 +239,14 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'get_window_name',
               blockType: Scratch.BlockType.REPORTER,
-              disableMonitor: true,
+              disableMonitor: false,
               text: 'get window title'
+            },
+            {
+              opcode: 'current_url',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'current url',
+              disableMonitor: false
             },
             {
               opcode: 'return_math_random_function',
@@ -621,6 +636,18 @@ function scratch_modulo(value, mod) {
               }
             },
             {
+              opcode: 'open_in_new_tab',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'open [url] in new tab',
+              disableMonitor: true,
+              arguments: {
+                url: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'https://extensions.turbowarp.org'
+                }
+              }
+            },
+            {
               opcode: 'console_log',
               blockType: Scratch.BlockType.COMMAND,
               text: 'console [log_type] [input]',
@@ -833,6 +860,26 @@ function scratch_modulo(value, mod) {
                 tag_id: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'fwb:test_tag'
+                }
+              }
+            },
+            {
+              opcode: 'does_tag_contain_thing',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does [tag_type]/[tag_id] have [thing]?',
+              arguments: {
+                tag_type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                tag_id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:test_tag'
+                },
+                thing: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:chica'
                 }
               }
             },
@@ -1695,6 +1742,97 @@ function scratch_modulo(value, mod) {
 
             default:
               return false;
+          }
+        }
+
+        open_in_new_tab (args) {
+          Scratch.openWindow(args.url);
+        }
+
+        connected_to_internet () {
+          try {
+            return navigator.onLine;
+          } catch (err) {
+            return false;
+          }
+        }
+
+        current_url () {
+          try {
+            return document.URL || "";
+          } catch (err) {
+            return "";
+          }
+        }
+
+        json_valid_return (json) {
+          if (typeof json != "string") {
+            return json;
+          } else if (
+            (json.slice(0, 1) != "[" || json.slice(-1) != "]") &&
+            (json.slice(0, 1) != "{" || json.slice(-1) != "}")
+          ) {
+            return json;
+          } else {
+            try {
+              return JSON.parse(json);
+            } catch {
+              return json;
+            }
+          }
+        }
+
+        does_tag_contain_thing (args) {
+          let data;
+          switch(args.tag_type) {
+            // characters
+            case "character":
+            case "characters":
+              data = character_tags[args.tag_id];
+              break;
+            
+            // enemies
+            case "enemy":
+            case "enemies":
+              data = enemy_tags[args.tag_id];
+              break;
+            
+            // attacks
+            case "attack":
+            case "attacks":
+              data = attack_tags[args.tag_id];
+              break;
+
+            // tiles
+            case "tile":
+            case "tiles":
+              data = tile_tags[args.tag_id];
+              break;
+
+            // entities
+            case "entity":
+            case "entities":
+              data = entity_tags[args.tag_id];
+              break;
+
+            // items
+            case "item":
+            case "items":
+              data = item_tags[args.tag_id];
+              break;
+
+            default:
+              console.error("failed switch case");
+              return false;
+          }
+
+          try {
+            //json = JSON.parse(data);
+            //value = this.json_valid_return(args.thing);
+            return data.includes('"' + args.thing + '"');
+          } catch {
+            console.error("failed try statement");
+            return false;
           }
         }
 
