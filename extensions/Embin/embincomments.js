@@ -6,7 +6,7 @@
 (function (Scratch) {
     'use strict';
 
-    const embin_comments_version = 'v1.1.0';
+    const embin_comments_version = 'v1.2.0';
     const branch_true = true;
   
     class EmbinComments {
@@ -180,6 +180,44 @@
                             }
                         }
                     },
+
+                    '---',
+
+                    {
+                        blockType: Scratch.BlockType.LABEL,
+                        text: 'Placeholders',
+                        hideFromPalette: false
+                    },
+                    {
+                        opcode: 'placeholder_hat',
+                        blockType: Scratch.BlockType.HAT,
+                        text: '...',
+                        isEdgeActivated: false
+                    },
+                    {
+                        opcode: 'placeholder_block',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: '...'
+                    },
+                    {
+                        opcode: 'placeholder_block_terminal',
+                        blockType: Scratch.BlockType.COMMAND,
+                        isTerminal: true,
+                        text: '...'
+                    },
+                    {
+                        opcode: 'placeholder_reporter',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '...',
+                        allowDropAnywhere: true,
+                        disableMonitor: true
+                    },
+                    {
+                        opcode: 'placeholder_boolean',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: '...',
+                        disableMonitor: true
+                    },
                     /*
                     {
                         opcode: 'comment_conditional',
@@ -246,13 +284,26 @@
             return true;
         }
 
-        /*
-        comment_conditional (args, util) {
-            if (branch_true) {
-                util.startBranch(1, false);
-            }
+        placeholder_block () {
+            // no-op
         }
-        */
-    }
+
+        placeholder_reporter () {
+            return '';
+        }
+
+        placeholder_boolean () {
+            return false;
+        }
+
+        placeholder_block_terminal () {
+            // no-op
+        }
+
+        placeholder_hat () {
+            // no-op
+        }
+
+    } // end of blocks code
     Scratch.extensions.register(new EmbinComments());
 })(Scratch);

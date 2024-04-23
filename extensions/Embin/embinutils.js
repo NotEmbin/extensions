@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.0';
+    const embin_utils_version = 'v1.14.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -471,7 +471,7 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'return_uuid',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'generate a UUID',
+              text: 'generate UUID',
               disableMonitor: true
             },
             {
