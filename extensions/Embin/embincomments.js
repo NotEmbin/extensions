@@ -6,8 +6,9 @@
 (function (Scratch) {
     'use strict';
 
-    const embin_comments_version = 'v1.2.0';
+    const embin_comments_version = 'v1.2.1';
     const branch_true = true;
+    const default_comment = 'cool comment';
   
     class EmbinComments {
         getInfo() {
@@ -35,7 +36,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'cool coment'
+                                defaultValue: default_comment
                             }
                         }
                     },
@@ -46,7 +47,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'cool comment'
+                                defaultValue: default_comment
                             }
                         }
                     },
@@ -58,7 +59,7 @@
                         arguments: {
                             comment2: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'cool comment'
+                                defaultValue: default_comment
                             }
                         }
                     },
@@ -71,7 +72,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             value: {
                                 type: Scratch.ArgumentType.STRING,
@@ -86,7 +87,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             value: {
                                 type: Scratch.ArgumentType.BOOLEAN
@@ -101,7 +102,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             value2: {
                                 type: Scratch.ArgumentType.STRING,
@@ -110,13 +111,13 @@
                         }
                     },
                     {
-                        opcode: "comment_conditional_tw",
+                        opcode: 'comment_conditional_tw',
                         blockType: Scratch.BlockType.CONDITIONAL,
-                        text: "// [COMMENT]",
+                        text: '// [COMMENT]',
                         arguments: {
                             COMMENT: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: "comment",
+                                defaultValue: default_comment
                             },
                         },
                     },
@@ -127,7 +128,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             color: {
                                 type: Scratch.ArgumentType.COLOR,
@@ -142,7 +143,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             matrix: {
                                 type: Scratch.ArgumentType.MATRIX,
@@ -157,7 +158,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             angle: {
                                 type: Scratch.ArgumentType.ANGLE,
@@ -172,7 +173,7 @@
                         arguments: {
                             comment: {
                                 type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'comment'
+                                defaultValue: default_comment
                             },
                             note: {
                                 type: Scratch.ArgumentType.NOTE,
@@ -181,7 +182,7 @@
                         }
                     },
 
-                    '---',
+                    //'---',
 
                     {
                         blockType: Scratch.BlockType.LABEL,

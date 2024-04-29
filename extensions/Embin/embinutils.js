@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.1';
+    const embin_utils_version = 'v1.14.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -246,6 +246,12 @@ function scratch_modulo(value, mod) {
               opcode: 'current_url',
               blockType: Scratch.BlockType.REPORTER,
               text: 'current url',
+              disableMonitor: false
+            },
+            {
+              opcode: 'get_loaded_extensions',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'loaded extensions',
               disableMonitor: false
             },
             {
@@ -1834,6 +1840,12 @@ function scratch_modulo(value, mod) {
             console.error("failed try statement");
             return false;
           }
+        }
+
+        get_loaded_extensions (args) {
+          return JSON.stringify(
+            Array.from(vm.extensionManager._loadedExtensions.keys())
+          );
         }
 
       } // end of blocks code
