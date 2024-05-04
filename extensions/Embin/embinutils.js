@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.2';
+    const embin_utils_version = 'v1.14.3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -53,13 +53,15 @@ function scratch_modulo(value, mod) {
       if (a == 'clear console') {console.clear();}
       if (a == 'return true') return true;
       if (a == 'return false') return false;
-      if (a == 'return null') return null;
+      if (a == 'return null') return 'null';
       if (a == 'return nothing') return '';
       if (a == 'return yes') return 'Yes';
       if (a == 'return no') return 'No';
       if (a == 'true') return true;
       if (a == 'false') return false;
       if (a == 'null') return 'null';
+      if (a == 'literal null') return null;
+      if (a == 'return literal null') return null;
       if (a == 'nothing') return '';
       if (a == 'yes') return 'Yes';
       if (a == 'no') return 'No';
@@ -225,10 +227,22 @@ function scratch_modulo(value, mod) {
               text: 'null'
             },
             {
+              opcode: 'return_literal_null',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'literal null'
+            },
+            {
               opcode: 'return_infinity',
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
               text: 'Infinity'
+            },
+            {
+              opcode: 'return_negative_infinity',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: '-Infinity'
             },
             {
               opcode: 'return_nan',
@@ -1000,6 +1014,7 @@ function scratch_modulo(value, mod) {
                   'return true',
                   'return false',
                   'return null',
+                  'return literal null',
                   'return yes',
                   'return no',
                   'stop project',
@@ -1846,6 +1861,14 @@ function scratch_modulo(value, mod) {
           return JSON.stringify(
             Array.from(vm.extensionManager._loadedExtensions.keys())
           );
+        }
+
+        return_negative_infinity (args) {
+          return (0 - inff);
+        }
+
+        return_literal_null (args) {
+          return null;
         }
 
       } // end of blocks code
