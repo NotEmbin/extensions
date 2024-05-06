@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.3';
+    const embin_utils_version = 'v1.14.4';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -266,6 +266,12 @@ function scratch_modulo(value, mod) {
               opcode: 'get_loaded_extensions',
               blockType: Scratch.BlockType.REPORTER,
               text: 'loaded extensions',
+              disableMonitor: false
+            },
+            {
+              opcode: 'get_sprite_name',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'sprite name',
               disableMonitor: false
             },
             {
@@ -1869,6 +1875,10 @@ function scratch_modulo(value, mod) {
 
         return_literal_null (args) {
           return null;
+        }
+
+        get_sprite_name(args, util) {
+          return util.target.sprite.name ?? "";
         }
 
       } // end of blocks code
