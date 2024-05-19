@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.4';
+    const embin_utils_version = 'v1.14.5';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -30,6 +30,9 @@ function scratch_modulo(value, mod) {
     let tile_tags = Object.create(null);
     let entity_tags = Object.create(null);
     let item_tags = Object.create(null);
+    let chip_tags = Object.create(null);
+    let byte_tags = Object.create(null);
+    let area_tags = Object.create(null);
 
     function reset_temp_vars() {
       temp_vars = Object.create(null);
@@ -42,6 +45,9 @@ function scratch_modulo(value, mod) {
       tile_tags = Object.create(null);
       entity_tags = Object.create(null);
       item_tags = Object.create(null);
+      chip_tags = Object.create(null);
+      byte_tags = Object.create(null);
+      area_tags = Object.create(null);
     }
 
     // js sha256 hashing algorithm by geraintluff (minified)
@@ -1079,6 +1085,18 @@ function scratch_modulo(value, mod) {
                   {
                     text: 'items',
                     value: 'item'
+                  },
+                  {
+                    text: 'chips',
+                    value: 'chip'
+                  },
+                  {
+                    text: 'bytes',
+                    value: 'byte'
+                  },
+                  {
+                    text: 'areas',
+                    value: 'area'
                   }
                 ]
               },
@@ -1090,7 +1108,10 @@ function scratch_modulo(value, mod) {
                   'attack',
                   'tile',
                   'entity',
-                  'item'
+                  'item',
+                  'chip',
+                  'byte',
+                  'area'
                 ]
               }
             }
@@ -1572,6 +1593,24 @@ function scratch_modulo(value, mod) {
               item_tags[args.tag_id] = args.tag_contents;
               break;
 
+            // chips
+            case "chip":
+            case "chips":
+              chip_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            // bytes
+            case "byte":
+            case "bytes":
+              byte_tags[args.tag_id] = args.tag_contents;
+              break;
+
+            // areas
+            case "area":
+            case "areas":
+              area_tags[args.tag_id] = args.tag_contents;
+              break;
+
             default:
               return;
           }
@@ -1614,6 +1653,24 @@ function scratch_modulo(value, mod) {
             case "items":
               if (!(args.tag_id in item_tags)) return "";
               return item_tags[args.tag_id];
+
+            // chips
+            case "chip":
+            case "chips":
+              if (!(args.tag_id in chip_tags)) return "";
+              return chip_tags[args.tag_id];
+
+            // bytes
+            case "byte":
+            case "bytes":
+              if (!(args.tag_id in byte_tags)) return "";
+              return byte_tags[args.tag_id];
+
+            // areas
+            case "area":
+            case "areas":
+              if (!(args.tag_id in area_tags)) return "";
+              return area_tags[args.tag_id];
 
             default:
               return "";
@@ -1677,6 +1734,33 @@ function scratch_modulo(value, mod) {
               item_tags[args.tag_id] = JSON.stringify(new_data);
               break;
 
+            // chips
+            case "chip":
+            case "chips":
+              if (!(args.tag_id in chip_tags)) return;
+              new_data = JSON.parse(chip_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              chip_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            // bytes
+            case "byte":
+            case "bytes":
+              if (!(args.tag_id in byte_tags)) return;
+              new_data = JSON.parse(byte_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              byte_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
+            // areas
+            case "area":
+            case "areas":
+              if (!(args.tag_id in area_tags)) return;
+              new_data = JSON.parse(area_tags[args.tag_id]);
+              new_data.push(args.tag_addition);
+              area_tags[args.tag_id] = JSON.stringify(new_data);
+              break;
+
             default:
               return;
           }
@@ -1718,6 +1802,24 @@ function scratch_modulo(value, mod) {
             case "item":
             case "items":
               if (!(args.tag_id in item_tags)) return false;
+              return true;
+
+            // chips
+            case "chip":
+            case "chips":
+              if (!(args.tag_id in chip_tags)) return false;
+              return true;
+
+            // bytes
+            case "byte":
+            case "bytes":
+              if (!(args.tag_id in byte_tags)) return false;
+              return true;
+
+            // areas
+            case "area":
+            case "areas":
+              if (!(args.tag_id in area_tags)) return false;
               return true;
 
             default:
@@ -1765,6 +1867,24 @@ function scratch_modulo(value, mod) {
             case "item":
             case "items":
               Reflect.deleteProperty(item_tags, args.tag_id);
+              break;
+
+            // chips
+            case "chip":
+            case "chips":
+              Reflect.deleteProperty(chip_tags, args.tag_id);
+              break;
+
+            // bytes
+            case "byte":
+            case "bytes":
+              Reflect.deleteProperty(byte_tags, args.tag_id);
+              break;
+
+            // areas
+            case "area":
+            case "areas":
+              Reflect.deleteProperty(area_tags, args.tag_id);
               break;
 
             default:
@@ -1846,6 +1966,24 @@ function scratch_modulo(value, mod) {
             case "item":
             case "items":
               data = item_tags[args.tag_id];
+              break;
+
+            // chips
+            case "chip":
+            case "chips":
+              data = chip_tags[args.tag_id];
+              break;
+
+            // bytes
+            case "byte":
+            case "bytes":
+              data = byte_tags[args.tag_id];
+              break;
+
+            // areas
+            case "area":
+            case "areas":
+              data = area_tags[args.tag_id];
               break;
 
             default:
