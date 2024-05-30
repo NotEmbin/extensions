@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.14.5';
+    const embin_utils_version = 'v1.15.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -50,7 +50,7 @@ function scratch_modulo(value, mod) {
       area_tags = Object.create(null);
     }
 
-    // js sha256 hashing algorithm by geraintluff (minified)
+    // minified js sha256 hashing algorithm by geraintluff
     var sha256=function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=Math.pow,g=f(2,32),h="length",i="",j=[],k=8*b[h],l=a.h=a.h||[],m=a.k=a.k||[],n=m[h],o={},p=2;64>n;p++)if(!o[p]){for(d=0;313>d;d+=p)o[d]=p;l[n]=f(p,.5)*g|0,m[n++]=f(p,1/3)*g|0}for(b+="\x80";b[h]%64-56;)b+="\x00";for(d=0;d<b[h];d++){if(e=b.charCodeAt(d),e>>8)return;j[d>>2]|=e<<(3-d)%4*8}for(j[j[h]]=k/g|0,j[j[h]]=k,e=0;e<j[h];){var q=j.slice(e,e+=16),r=l;for(l=l.slice(0,8),d=0;64>d;d++){var s=q[d-15],t=q[d-2],u=l[0],v=l[4],w=l[7]+(c(v,6)^c(v,11)^c(v,25))+(v&l[5]^~v&l[6])+m[d]+(q[d]=16>d?q[d]:q[d-16]+(c(s,7)^c(s,18)^s>>>3)+q[d-7]+(c(t,17)^c(t,19)^t>>>10)|0),x=(c(u,2)^c(u,13)^c(u,22))+(u&l[1]^u&l[2]^l[1]&l[2]);l=[w+x|0].concat(l),l[4]=l[4]+w|0}for(d=0;8>d;d++)l[d]=l[d]+r[d]|0}for(d=0;8>d;d++)for(e=3;e+1;e--){var y=l[d]>>8*e&255;i+=(16>y?0:"")+y.toString(16)}return i};
 
     function action_reporter(a, utility) {
@@ -729,6 +729,67 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
+              opcode: 'set_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set var [name] to [value]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'value'
+                }
+              }
+            },
+            {
+              opcode: 'get_var',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get var [name]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'does_var_exist',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does var [name] exist',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'delete_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete var [name]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'delete_all_vars',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete all variables',
+              disableMonitor: true
+            },
+
+            '---',
+
+            {
               opcode: 'return_fallback_costume',
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
@@ -759,18 +820,6 @@ function scratch_modulo(value, mod) {
                 fcostume: {
                   type: Scratch.ArgumentType.COSTUME,
                   defaultValue: 'fallback'
-                }
-              }
-            },
-            {
-              opcode: 'set_costume_to',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'set costume to [new_costume]',
-              disableMonitor: true,
-              hideFromPalette: true,
-              arguments: {
-                new_costume: {
-                  type: Scratch.ArgumentType.COSTUME
                 }
               }
             },
@@ -1367,44 +1416,6 @@ function scratch_modulo(value, mod) {
             return costume.rotationCenterY;
           } else {
             return '';
-          }
-        }
-
-        _setCostume (target, requestedCostume, optZeroIndex) { // used by compiler
-          if (typeof requestedCostume === 'number') {
-              // Numbers should be treated as costume indices, always
-              target.setCostume(optZeroIndex ? requestedCostume : requestedCostume - 1);
-          } else {
-              // Strings should be treated as costume names, where possible
-              const costumeIndex = target.getCostumeIndexByName(requestedCostume.toString());
-  
-              if (costumeIndex !== -1) {
-                  target.setCostume(costumeIndex);
-              } else if (requestedCostume === 'next costume') {
-                  target.setCostume(target.currentCostume + 1);
-              } else if (requestedCostume === 'previous costume') {
-                  target.setCostume(target.currentCostume - 1);
-              // Try to cast the string to a number (and treat it as a costume index)
-              // Pure whitespace should not be treated as a number
-              // Note: isNaN will cast the string to a number before checking if it's NaN
-              } else if (!(isNaN(requestedCostume) || Cast.isWhiteSpace(requestedCostume))) {
-                  target.setCostume(optZeroIndex ? Number(requestedCostume) : Number(requestedCostume) - 1);
-              }
-          }
-  
-          // Per 2.0, 'switch costume' can't start threads even in the Stage.
-          return [];
-        } 
-
-        set_costume_to (args, util) {
-          let costume_index = this.getCostumeInput(args.costume, util.target);
-          let costume = util.target.sprite.costumes[costume_index];
-          if (!costume) {
-            this._setCostume(util.target, fallback_costume_name);
-            return;
-          } else {
-            this._setCostume(util.target, args.new_costume);
-            return;
           }
         }
 
@@ -2017,6 +2028,27 @@ function scratch_modulo(value, mod) {
 
         get_sprite_name(args, util) {
           return util.target.sprite.name ?? "";
+        }
+
+        set_var(args) {
+          temp_vars[args.name] = args.value;
+        }
+
+        get_var(args) {
+          if (!(args.name in temp_vars)) return "";
+          return temp_vars[args.name];
+        }
+
+        delete_var(args) {
+          Reflect.deleteProperty(temp_vars, args.name);
+        }
+
+        delete_all_vars(args) {
+          reset_temp_vars();
+        }
+
+        does_var_exist(args) {
+          return args.name in temp_vars;
         }
 
       } // end of blocks code
