@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.15.1';
+    const embin_utils_version = 'v1.15.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -749,6 +749,7 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.REPORTER,
               text: 'get var [name]',
               disableMonitor: true,
+              allowDropAnywhere: true,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
