@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.15.0';
+    const embin_utils_version = 'v1.15.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -759,7 +759,7 @@ function scratch_modulo(value, mod) {
             {
               opcode: 'does_var_exist',
               blockType: Scratch.BlockType.BOOLEAN,
-              text: 'does var [name] exist',
+              text: 'does var [name] exist?',
               disableMonitor: true,
               arguments: {
                 name: {
