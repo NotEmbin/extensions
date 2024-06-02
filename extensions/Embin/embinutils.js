@@ -12,7 +12,7 @@ function scratch_modulo(value, mod) {
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.15.2';
+    const embin_utils_version = 'v1.15.3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -88,10 +88,9 @@ function scratch_modulo(value, mod) {
         return {
             id: 'embinutils',
             name: 'Embin\'s Utils',
-            color3: '#E62CB1',
-            color1: '#4A0031',
-            //color2: '#C72398',
-            color2: '#1F0215',
+            color3: '#EA1A1A',
+            color1: '#4A0000',
+            color2: '#3A0101',
             blocks: [
             {
                 opcode: 'return_version',
@@ -145,6 +144,19 @@ function scratch_modulo(value, mod) {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'true',
                   menu: 'boolean_selection'
+                }
+              }
+            },
+            {
+              opcode: 'is_mouse_down',
+              blockType: Scratch.BlockType.BOOLEAN,
+              disableMonitor: true,
+              text: '[mouse] mouse button down?',
+              arguments: {
+                mouse: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '(0) primary',
+                  menu: 'mouse'
                 }
               }
             },
@@ -279,12 +291,6 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.REPORTER,
               text: 'sprite name',
               disableMonitor: false
-            },
-            {
-              opcode: 'return_math_random_function',
-              blockType: Scratch.BlockType.REPORTER,
-              disableMonitor: true,
-              text: 'js: Math.random()'
             },
 
             '---',
@@ -505,6 +511,12 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.REPORTER,
               text: 'generate UUID',
               disableMonitor: true
+            },
+            {
+              opcode: 'return_math_random_function',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Math.random()'
             },
             {
                 opcode: 'if_else_green_flag_reporter',
@@ -1162,6 +1174,23 @@ function scratch_modulo(value, mod) {
                   'chip',
                   'byte',
                   'area'
+                ]
+              },
+              mouse: {
+                acceptReporters: true,
+                items: [
+                  {
+                    text: '(0) primary',
+                    value: '0'
+                  },
+                  {
+                    text: '(1) middle',
+                    value: '1'
+                  },
+                  {
+                    text: '(2) secondary',
+                    value: '2'
+                  }
                 ]
               }
             }
@@ -2050,6 +2079,11 @@ function scratch_modulo(value, mod) {
 
         does_var_exist(args) {
           return args.name in temp_vars;
+        }
+
+        is_mouse_down(args, util) {
+          const mbutton = Cast.toNumber(args.mouse);
+          return util.ioQuery('mouse', 'getButtonIsDown', [mbutton]);
         }
 
       } // end of blocks code
