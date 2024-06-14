@@ -3,20 +3,21 @@
 // Description: Many utility blocks.
 // By: Embin <https://scratch.mit.edu/users/Embin/>
 
-function scratch_modulo(value, mod) {
-    var n = value;
-    let return_value = n % mod;
-    if (return_value / mod < 0) return_value += mod;
-    return return_value; 
-}
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.15.3';
+    const embin_utils_version = 'v1.16.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
       throw new Error('This extension must run unsandboxed');
+    }
+
+    function scratch_modulo(value, mod) {
+      var n = value;
+      let return_value = n % mod;
+      if (return_value / mod < 0) return_value += mod;
+      return return_value; 
     }
 
     const vm = Scratch.vm;
@@ -24,30 +25,39 @@ function scratch_modulo(value, mod) {
 
     let temp_vars = Object.create(null);
 
-    let character_tags = Object.create(null);
-    let enemy_tags = Object.create(null);
-    let attack_tags = Object.create(null);
-    let tile_tags = Object.create(null);
-    let entity_tags = Object.create(null);
-    let item_tags = Object.create(null);
-    let chip_tags = Object.create(null);
-    let byte_tags = Object.create(null);
-    let area_tags = Object.create(null);
+    let tags = Object.create(null);
+    let tag_name_delimeter = "/";
+    const v_tag_types = [
+      'characters',
+      'enemies',
+      'attacks',
+      'tiles',
+      'entities',
+      'items',
+      'chips',
+      'bytes',
+      'areas',
+      'levels',
+      'buildables',
+      'backgrounds',
+      'maps',
+      'campaigns',
+      'effects',
+      'blocks',
+      'enchantments',
+      'biomes',
+      'liquids',
+      'stories',
+      'unlockables',
+      'expansions'
+    ];
 
     function reset_temp_vars() {
       temp_vars = Object.create(null);
     }
 
     function reset_all_tags() {
-      character_tags = Object.create(null);
-      enemy_tags = Object.create(null);
-      attack_tags = Object.create(null);
-      tile_tags = Object.create(null);
-      entity_tags = Object.create(null);
-      item_tags = Object.create(null);
-      chip_tags = Object.create(null);
-      byte_tags = Object.create(null);
-      area_tags = Object.create(null);
+      tags = Object.create(null);
     }
 
     // minified js sha256 hashing algorithm by geraintluff
@@ -227,10 +237,10 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
-                opcode: 'return_newline',
-                blockType: Scratch.BlockType.REPORTER,
-                disableMonitor: true,
-                text: 'newline'
+              opcode: 'return_newline',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'newline'
             },
             {
               opcode: 'return_tab',
@@ -296,21 +306,21 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
-                opcode: 'string_split',
-                blockType: Scratch.BlockType.REPORTER,
-                text: 'item [numof] of [string] split by: [deli]',
-                arguments: {
-                  numof: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '3'
+              opcode: 'string_split',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'item [numof] of [string] split by: [deli]',
+              arguments: {
+                numof: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '3'
                 },
-                  string: {
-                    type: Scratch.ArgumentType.STRING,
-                    defaultValue: 'A#B#C#D'
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'A#B#C#D'
                 },
-                  deli: {
-                    type: Scratch.ArgumentType.STRING,
-                    defaultValue: '#'
+                deli: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '#'
                 }
               }
             },
@@ -451,36 +461,36 @@ function scratch_modulo(value, mod) {
               }
             },
             {
-                opcode: 'convert_to_string',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '[thing] to string',
-                arguments: {
-                  thing: {
-                    type: Scratch.ArgumentType.STRING,
-                    defaultValue: '007'
+              opcode: 'convert_to_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '[thing] to string',
+              arguments: {
+                thing: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '007'
                 }
               }
             },
             {
-                opcode: 'convert_to_number',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '[thing] to number',
-                arguments: {
-                  thing: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '007'
+              opcode: 'convert_to_number',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '[thing] to number',
+              arguments: {
+                thing: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '007'
                 }
               }
             },
             {
-                opcode: 'convert_to_id',
-                blockType: Scratch.BlockType.REPORTER,
-                text: 'convert [strin] to valid id',
-                arguments: {
-                  strin: {
-                    type: Scratch.ArgumentType.STRING,
-                    defaultValue: 'Why, hello there!'
-                    //defaultValue: 'Hello Embin & the World'
+              opcode: 'convert_to_id',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'convert [strin] to valid id',
+              arguments: {
+                strin: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Why, hello there!'
+                  //defaultValue: 'Hello Embin & the World'
                 }
               }
             },
@@ -519,17 +529,17 @@ function scratch_modulo(value, mod) {
               text: 'js: Math.random()'
             },
             {
-                opcode: 'if_else_green_flag_reporter',
-                blockType: Scratch.BlockType.REPORTER,
-                text: 'OLD | if [if] then [then] else run green flag',
-                hideFromPalette: hide_legacy_blocks,
-                arguments: {
-                  if: {
-                    type: Scratch.ArgumentType.BOOLEAN
+              opcode: 'if_else_green_flag_reporter',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'OLD | if [if] then [then] else run green flag',
+              hideFromPalette: hide_legacy_blocks,
+              arguments: {
+                if: {
+                  type: Scratch.ArgumentType.BOOLEAN
                 },
-                  then: {
-                      type: Scratch.ArgumentType.STRING,
-                      defaultValue: 'abc'
+                then: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'abc'
                 }
               }
             },
@@ -657,9 +667,9 @@ function scratch_modulo(value, mod) {
             '---',
 
             {
-                opcode: 'green_flag',
-                blockType: Scratch.BlockType.COMMAND,
-                text: 'run green flag'
+              opcode: 'green_flag',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'run green flag'
             },
             {
               opcode: 'close_window',
@@ -798,6 +808,11 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.COMMAND,
               text: 'delete all variables',
               disableMonitor: true
+            },
+            {
+              opcode: 'return_list_of_vars',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current variables'
             },
 
             '---',
@@ -998,6 +1013,29 @@ function scratch_modulo(value, mod) {
               blockType: Scratch.BlockType.COMMAND,
               text: 'delete all tags'
             },
+            {
+              opcode: 'return_list_of_tags',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current tags'
+            },
+            {
+              opcode: 'create_tag_type',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create new tag type with name [tag_type_name]',
+              hideFromPalette: true,
+              arguments: {
+                tag_type_name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'goobers'
+                }
+              }
+            },
+            {
+              opcode: 'return_all_tag_types',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current tag types',
+              hideFromPalette: true
+            },
 
             '---',
 
@@ -1045,7 +1083,7 @@ function scratch_modulo(value, mod) {
                 arguments: {
                   num: {
                     type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '16'
+                    defaultValue: '127'
                 }
               }
             },
@@ -1056,7 +1094,7 @@ function scratch_modulo(value, mod) {
                 arguments: {
                   num: {
                     type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '16'
+                    defaultValue: '32767'
                 }
               }
             },
@@ -1067,11 +1105,10 @@ function scratch_modulo(value, mod) {
                 arguments: {
                   num: {
                     type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '16'
+                    defaultValue: '2147483647'
                 }
               }
             }
-
 
             ],
             menus: {
@@ -1123,44 +1160,7 @@ function scratch_modulo(value, mod) {
               },
               tag_types: {
                 acceptReporters: true,
-                items: [
-                  {
-                    text: 'characters',
-                    value: 'character'
-                  },
-                  {
-                    text: 'enemies',
-                    value: 'enemy'
-                  },
-                  {
-                    text: 'attacks',
-                    value: 'attack'
-                  },
-                  {
-                    text: 'tiles',
-                    value: 'tile'
-                  },
-                  {
-                    text: 'entities',
-                    value: 'entity'
-                  },
-                  {
-                    text: 'items',
-                    value: 'item'
-                  },
-                  {
-                    text: 'chips',
-                    value: 'chip'
-                  },
-                  {
-                    text: 'bytes',
-                    value: 'byte'
-                  },
-                  {
-                    text: 'areas',
-                    value: 'area'
-                  }
-                ]
+                items: v_tag_types
               },
               tag_types_singular: {
                 acceptReporters: true,
@@ -1597,275 +1597,29 @@ function scratch_modulo(value, mod) {
             throw new Error("Not an array");
           }
 
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              character_tags[args.tag_id] = args.tag_contents;
-              break;
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              enemy_tags[args.tag_id] = args.tag_contents;
-              break;
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              attack_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // tiles
-            case "tile":
-            case "tiles":
-              tile_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // entities
-            case "entity":
-            case "entities":
-              entity_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // items
-            case "item":
-            case "items":
-              item_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // chips
-            case "chip":
-            case "chips":
-              chip_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // bytes
-            case "byte":
-            case "bytes":
-              byte_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            // areas
-            case "area":
-            case "areas":
-              area_tags[args.tag_id] = args.tag_contents;
-              break;
-
-            default:
-              return;
-          }
+          tags[(args.tag_type + tag_name_delimeter + args.tag_id)] = args.tag_contents;
         }
 
         get_tag (args) {
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              if (!(args.tag_id in character_tags)) return "";
-              return character_tags[args.tag_id];
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              if (!(args.tag_id in enemy_tags)) return "";
-              return enemy_tags[args.tag_id];
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              if (!(args.tag_id in attack_tags)) return "";
-              return attack_tags[args.tag_id];
-
-            // tiles
-            case "tile":
-            case "tiles":
-              if (!(args.tag_id in tile_tags)) return "";
-              return tile_tags[args.tag_id];
-
-            // entities
-            case "entity":
-            case "entities":
-              if (!(args.tag_id in entity_tags)) return "";
-              return entity_tags[args.tag_id];
-
-            // items
-            case "item":
-            case "items":
-              if (!(args.tag_id in item_tags)) return "";
-              return item_tags[args.tag_id];
-
-            // chips
-            case "chip":
-            case "chips":
-              if (!(args.tag_id in chip_tags)) return "";
-              return chip_tags[args.tag_id];
-
-            // bytes
-            case "byte":
-            case "bytes":
-              if (!(args.tag_id in byte_tags)) return "";
-              return byte_tags[args.tag_id];
-
-            // areas
-            case "area":
-            case "areas":
-              if (!(args.tag_id in area_tags)) return "";
-              return area_tags[args.tag_id];
-
-            default:
-              return "";
-          }
+          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          if (!(tagid in tags)) return "[]";
+          return tags[tagid];
         }
 
         add_to_tag (args) {
+          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
           let new_data;
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              if (!(args.tag_id in character_tags)) return;
-              new_data = JSON.parse(character_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              character_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              if (!(args.tag_id in enemy_tags)) return;
-              new_data = JSON.parse(enemy_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              enemy_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              if (!(args.tag_id in attack_tags)) return;
-              new_data = JSON.parse(attack_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              attack_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
 
-            // tiles
-            case "tile":
-            case "tiles":
-              if (!(args.tag_id in tile_tags)) return;
-              new_data = JSON.parse(tile_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              tile_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            // entities
-            case "entity":
-            case "entities":
-              if (!(args.tag_id in entity_tags)) return;
-              new_data = JSON.parse(entity_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              entity_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            // items
-            case "item":
-            case "items":
-              if (!(args.tag_id in item_tags)) return;
-              new_data = JSON.parse(item_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              item_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            // chips
-            case "chip":
-            case "chips":
-              if (!(args.tag_id in chip_tags)) return;
-              new_data = JSON.parse(chip_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              chip_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            // bytes
-            case "byte":
-            case "bytes":
-              if (!(args.tag_id in byte_tags)) return;
-              new_data = JSON.parse(byte_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              byte_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            // areas
-            case "area":
-            case "areas":
-              if (!(args.tag_id in area_tags)) return;
-              new_data = JSON.parse(area_tags[args.tag_id]);
-              new_data.push(args.tag_addition);
-              area_tags[args.tag_id] = JSON.stringify(new_data);
-              break;
-
-            default:
-              return;
-          }
+          if (!(tagid in tags)) return;
+          new_data = JSON.parse(tags[tagid]);
+          new_data.push(args.tag_addition);
+          tags[tagid] = JSON.stringify(new_data);
         }
 
         does_tag_exist (args) {
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              if (!(args.tag_id in character_tags)) return false;
-              return true;
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              if (!(args.tag_id in enemy_tags)) return false;
-              return true;
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              if (!(args.tag_id in attack_tags)) return false;
-              return true;
-
-            // tiles
-            case "tile":
-            case "tiles":
-              if (!(args.tag_id in tile_tags)) return false;
-              return true;
-
-            // entities
-            case "entity":
-            case "entities":
-              if (!(args.tag_id in entity_tags)) return false;
-              return true;
-
-            // items
-            case "item":
-            case "items":
-              if (!(args.tag_id in item_tags)) return false;
-              return true;
-
-            // chips
-            case "chip":
-            case "chips":
-              if (!(args.tag_id in chip_tags)) return false;
-              return true;
-
-            // bytes
-            case "byte":
-            case "bytes":
-              if (!(args.tag_id in byte_tags)) return false;
-              return true;
-
-            // areas
-            case "area":
-            case "areas":
-              if (!(args.tag_id in area_tags)) return false;
-              return true;
-
-            default:
-              return false;
-          }
+          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          if (!(tagid in tags)) return false;
+          return true;
         }
 
         delete_all_tags (args) {
@@ -1873,64 +1627,8 @@ function scratch_modulo(value, mod) {
         }
 
         delete_specific_tag (args) {
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              Reflect.deleteProperty(character_tags, args.tag_id);
-              break;
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              Reflect.deleteProperty(enemy_tags, args.tag_id);
-              break;
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              Reflect.deleteProperty(attack_tags, args.tag_id);
-              break;
-
-            // tiles
-            case "tile":
-            case "tiles":
-              Reflect.deleteProperty(tile_tags, args.tag_id);
-              break;
-
-            // entities
-            case "entity":
-            case "entities":
-              Reflect.deleteProperty(entity_tags, args.tag_id);
-              break;
-
-            // items
-            case "item":
-            case "items":
-              Reflect.deleteProperty(item_tags, args.tag_id);
-              break;
-
-            // chips
-            case "chip":
-            case "chips":
-              Reflect.deleteProperty(chip_tags, args.tag_id);
-              break;
-
-            // bytes
-            case "byte":
-            case "bytes":
-              Reflect.deleteProperty(byte_tags, args.tag_id);
-              break;
-
-            // areas
-            case "area":
-            case "areas":
-              Reflect.deleteProperty(area_tags, args.tag_id);
-              break;
-
-            default:
-              return false;
-          }
+          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          Reflect.deleteProperty(tags, tagid);
         }
 
         open_in_new_tab (args) {
@@ -1971,67 +1669,8 @@ function scratch_modulo(value, mod) {
         }
 
         does_tag_contain_thing (args) {
-          let data;
-          switch(args.tag_type) {
-            // characters
-            case "character":
-            case "characters":
-              data = character_tags[args.tag_id];
-              break;
-            
-            // enemies
-            case "enemy":
-            case "enemies":
-              data = enemy_tags[args.tag_id];
-              break;
-            
-            // attacks
-            case "attack":
-            case "attacks":
-              data = attack_tags[args.tag_id];
-              break;
-
-            // tiles
-            case "tile":
-            case "tiles":
-              data = tile_tags[args.tag_id];
-              break;
-
-            // entities
-            case "entity":
-            case "entities":
-              data = entity_tags[args.tag_id];
-              break;
-
-            // items
-            case "item":
-            case "items":
-              data = item_tags[args.tag_id];
-              break;
-
-            // chips
-            case "chip":
-            case "chips":
-              data = chip_tags[args.tag_id];
-              break;
-
-            // bytes
-            case "byte":
-            case "bytes":
-              data = byte_tags[args.tag_id];
-              break;
-
-            // areas
-            case "area":
-            case "areas":
-              data = area_tags[args.tag_id];
-              break;
-
-            default:
-              console.error("failed switch case");
-              return false;
-          }
-
+          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let data = tags[tagid];
           try {
             //json = JSON.parse(data);
             //value = this.json_valid_return(args.thing);
@@ -2084,6 +1723,23 @@ function scratch_modulo(value, mod) {
         is_mouse_down(args, util) {
           const mbutton = Cast.toNumber(args.mouse);
           return util.ioQuery('mouse', 'getButtonIsDown', [mbutton]);
+        }
+
+        create_tag_type(args) {
+          v_tag_types.push(args.tag_type_name);
+          Scratch.vm.extensionManager.refreshBlocks();
+        }
+
+        return_all_tag_types(args) {
+          return v_tag_types;
+        }
+
+        return_list_of_vars(args) {
+          return Object.keys(temp_vars);
+        }
+
+        return_list_of_tags(args) {
+          return Object.keys(tags);
         }
 
       } // end of blocks code
