@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.16.0';
+    const embin_utils_version = 'v1.16.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -39,7 +39,7 @@
       'areas',
       'levels',
       'buildables',
-      'backgrounds',
+      'level_backgrounds',
       'maps',
       'campaigns',
       'effects',
@@ -49,7 +49,20 @@
       'liquids',
       'stories',
       'unlockables',
-      'expansions'
+      'expansions',
+      'secrets',
+      'paintings',
+      'tracks',
+      'upgrades',
+      'pieces',
+      'monsters',
+      'balls',
+      'towers',
+      'defenders',
+      'powerups',
+      'consumables',
+      'scripts',
+      'objects'
     ];
 
     function reset_temp_vars() {
@@ -92,6 +105,12 @@
     const inff = (777 ** 777);
     const nnaann = (inff - inff);
     var fallback_costume_name = 'fallback';
+    var namespace = 'engine';
+
+    function add_namespace_to_string(string) {
+      if (!(string.includes(":"))) return (namespace + ":" + string);
+      return string;
+    }
 
     class EmbinUtils {
         getInfo() {
@@ -230,6 +249,27 @@
                 anything: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'Howdy'
+                }
+              }
+            },
+
+            '---',
+
+            {
+              opcode: 'return_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: false,
+              text: 'namespace'
+            },
+            {
+              opcode: 'set_namespace',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set namespace to [new_namespace]',
+              disableMonitor: true,
+              arguments: {
+                new_namespace: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'engine'
                 }
               }
             },
@@ -485,12 +525,24 @@
             {
               opcode: 'convert_to_id',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'convert [strin] to valid id',
+              text: 'OLD | convert [strin] to valid id',
+              hideFromPalette: true,
               arguments: {
                 strin: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'Why, hello there!'
                   //defaultValue: 'Hello Embin & the World'
+                }
+              }
+            },
+            {
+              opcode: 'convert_to_id_with_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'convert [string] to valid id',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Crazy stuff, dude'
                 }
               }
             },
@@ -1597,17 +1649,17 @@
             throw new Error("Not an array");
           }
 
-          tags[(args.tag_type + tag_name_delimeter + args.tag_id)] = args.tag_contents;
+          tags[(args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id))] = args.tag_contents;
         }
 
         get_tag (args) {
-          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let tagid = (args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id));
           if (!(tagid in tags)) return "[]";
           return tags[tagid];
         }
 
         add_to_tag (args) {
-          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let tagid = (args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id));
           let new_data;
 
           if (!(tagid in tags)) return;
@@ -1617,7 +1669,7 @@
         }
 
         does_tag_exist (args) {
-          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let tagid = (args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id));
           if (!(tagid in tags)) return false;
           return true;
         }
@@ -1627,7 +1679,7 @@
         }
 
         delete_specific_tag (args) {
-          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let tagid = (args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id));
           Reflect.deleteProperty(tags, tagid);
         }
 
@@ -1669,7 +1721,7 @@
         }
 
         does_tag_contain_thing (args) {
-          let tagid = (args.tag_type + tag_name_delimeter + args.tag_id);
+          let tagid = (args.tag_type + tag_name_delimeter + add_namespace_to_string(args.tag_id));
           let data = tags[tagid];
           try {
             //json = JSON.parse(data);
@@ -1700,16 +1752,16 @@
         }
 
         set_var(args) {
-          temp_vars[args.name] = args.value;
+          temp_vars[add_namespace_to_string(args.name)] = args.value;
         }
 
         get_var(args) {
-          if (!(args.name in temp_vars)) return "";
-          return temp_vars[args.name];
+          if (!(add_namespace_to_string(args.name) in temp_vars)) return "";
+          return temp_vars[add_namespace_to_string(args.name)];
         }
 
         delete_var(args) {
-          Reflect.deleteProperty(temp_vars, args.name);
+          Reflect.deleteProperty(temp_vars, add_namespace_to_string(args.name));
         }
 
         delete_all_vars(args) {
@@ -1717,7 +1769,7 @@
         }
 
         does_var_exist(args) {
-          return args.name in temp_vars;
+          return add_namespace_to_string(args.name) in temp_vars;
         }
 
         is_mouse_down(args, util) {
@@ -1740,6 +1792,27 @@
 
         return_list_of_tags(args) {
           return Object.keys(tags);
+        }
+
+        convert_to_id_with_namespace(args) {
+          let new_string = String(args.string).toLowerCase();
+          new_string = new_string.replaceAll(' ', '_');
+          new_string = new_string.replaceAll('&', 'and');
+          new_string = new_string.replaceAll(',', '');
+          new_string = new_string.replaceAll('!', '');
+          new_string = new_string.replaceAll('?', '');
+          new_string = new_string.replaceAll('"', '');
+          new_string = new_string.replaceAll("'", '');
+          new_string = add_namespace_to_string(new_string);
+          return new_string;
+        }
+
+        return_namespace(args) {
+          return namespace;
+        }
+
+        set_namespace(args) {
+          namespace = args.new_namespace;
         }
 
       } // end of blocks code
