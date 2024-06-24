@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.16.1';
+    const embin_utils_version = 'v1.16.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -547,9 +547,39 @@
               }
             },
             {
+              opcode: 'merge_jsons',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'merge json [first] and [second]',
+              arguments: {
+                first: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"poo":"real"}'
+                },
+                second: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"poo2":"realest"}'
+                }
+              }
+            },
+            {
+              opcode: 'remove_array_from_array',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'remove array [remove] from [base]',
+              arguments: {
+                remove: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["loopy1","loopy3"]'
+                },
+                base: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["loopy0","loopy1","loopy2","loopy3"]'
+                }
+              }
+            },
+            {
               opcode: 'format_json',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'minify JSON [jjson]',
+              text: 'minify json [jjson]',
               arguments: {
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
@@ -1473,10 +1503,11 @@
         }
 
         format_json(args) {
-          var new_string = args.jjson;
-          var new_string = new_string.replaceAll('\n', '');
-          var new_string = new_string.replaceAll('\t', '');
-          return new_string;
+          try {
+            return JSON.stringify(JSON.parse(args.jjson));
+          } catch {
+            return "";
+          }
         }
 
         costume_attribute(args, util) {
@@ -1572,12 +1603,10 @@
         }
 
         js_stack (args) {
-          //let js_stack_dummy = "No longer supported";
           throw new Error("This block is no longer supported");
         }
 
         js_reporter (args) {
-          //return "This block is no longer supported.";
           throw new Error("This block is no longer supported");
         }
 
@@ -1813,6 +1842,34 @@
 
         set_namespace(args) {
           namespace = args.new_namespace;
+        }
+
+        merge_jsons(args) {
+          try {
+            const first = JSON.parse(args.first);
+            const second = JSON.parse(args.second);
+
+            return JSON.stringify(Object.assign(first, second));
+          } catch {
+            return "{}";
+          }
+        }
+
+        remove_array_from_array(args) {
+          try {
+            const base = JSON.parse(args.base);
+            const remove = JSON.parse(args.remove);
+            const new_array = base;
+            for (let i in remove) {
+              let pos = new_array.indexOf(remove[i]);
+              if (!(pos == -1)) {
+                new_array.splice(pos, 1);
+              }
+            }
+            return JSON.stringify(new_array);
+          } catch {
+            return "[]";
+          }
         }
 
       } // end of blocks code
