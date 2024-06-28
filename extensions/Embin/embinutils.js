@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.16.2';
+    const embin_utils_version = 'v1.16.3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -110,6 +110,29 @@
     function add_namespace_to_string(string) {
       if (!(string.includes(":"))) return (namespace + ":" + string);
       return string;
+    }
+
+    function stringToEqivalint(value) {
+      // is the value a valid json? if so convert to one else do nothing
+      try {
+        if (!(value.startsWith('{') || value.startsWith('['))) throw new Error('not actualy a json!!!!!!!!!!');
+        value = JSON.parse(value);
+      } catch {
+        // well its not a json so what is it?
+        if (String(Number(value)) === value) {
+          value = Number(value);
+        } else if (value.toLowerCase() === 'true') {
+          value = true;
+        } else if (value.toLowerCase() === 'false') {
+          value = false;
+        } else if (value === 'undefined') {
+          value = undefined;
+        } else if (value === 'null') {
+          value = null;
+        }
+      }
+
+      return value;
     }
 
     class EmbinUtils {
@@ -547,47 +570,6 @@
               }
             },
             {
-              opcode: 'merge_jsons',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'merge json [first] and [second]',
-              arguments: {
-                first: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: '{"poo":"real"}'
-                },
-                second: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: '{"poo2":"realest"}'
-                }
-              }
-            },
-            {
-              opcode: 'remove_array_from_array',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'remove array [remove] from [base]',
-              arguments: {
-                remove: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: '["loopy1","loopy3"]'
-                },
-                base: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: '["loopy0","loopy1","loopy2","loopy3"]'
-                }
-              }
-            },
-            {
-              opcode: 'format_json',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'minify json [jjson]',
-              arguments: {
-                jjson: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: ''
-                }
-              }
-            },
-            {
               opcode: 'hash_sha256',
               blockType: Scratch.BlockType.REPORTER,
               text: 'SHA-256 hash [stringtohash]',
@@ -965,21 +947,61 @@
             },
 
             '---',
-
+            
+            {
+              opcode: 'merge_jsons',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'merge json [first] and [second]',
+              arguments: {
+                first: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"poo":"real"}'
+                },
+                second: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"poo2":"realest"}'
+                }
+              }
+            },
+            {
+              opcode: 'remove_array_from_array',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'remove array [remove] from [base]',
+              arguments: {
+                remove: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["loopy1","loopy3"]'
+                },
+                base: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["loopy0","loopy1","loopy2","loopy3"]'
+                }
+              }
+            },
             {
               opcode: 'get_list_as_json',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'get contents of list [list] as array',
-              hideFromPalette: true,
+              text: 'get list [list] as array',
               arguments: {
-                  list: {
-                      type: Scratch.ArgumentType.STRING,
-                      defaultValue: 'select a list',
-                      menu: 'lists'
-                  }
+                list: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'select a list',
+                  menu: 'lists'
+                }
               }
             },
-
+            {
+              opcode: 'format_json',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'minify json [jjson]',
+              arguments: {
+                jjson: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: ''
+                }
+              }
+            },
+            
             '---',
 
             {
@@ -1235,7 +1257,10 @@
                   }
                 ]
               },
-              lists: 'get_lists',
+              lists: {
+                acceptReporters: true,
+                items: 'get_lists'
+              },
               boolean_selection: {
                 acceptReporters: true,
                 items: ['true', 'false', 'random']
@@ -1280,25 +1305,24 @@
         }
 
         get_lists () {
-          const variables = [].concat(
-              Object.values(vm.runtime.getTargetForStage().variables),
-              Object.values(vm.editingTarget.variables)
+          const globalLists = Object.values(
+            vm.runtime.getTargetForStage().variables
+          ).filter((x) => x.type == "list");
+          const localLists = Object.values(vm.editingTarget.variables).filter(
+            (x) => x.type == "list"
           );
-          const lists = variables.filter(i => i.type === 'list');
-          if (lists.length === 0) {
-              return [
-                  {
-                      text: 'select a list',
-                      value: 'select a list'
-                  }
-              ];
+          const uniqueLists = [...new Set([...globalLists, ...localLists])];
+          if (uniqueLists.length === 0) {
+            return [
+              {
+                text: "select a list",
+                value: "select a list",
+              },
+            ];
           }
-          return lists.map(i => ({
-              text: i.name,
-              value: JSON.stringify({
-                  id: i.id,
-                  name: i.name
-              })
+          return uniqueLists.map((i) => ({
+            text: i.name,
+            value: i.id,
           }));
         }
   
@@ -1545,16 +1569,28 @@
           return args.costume;
         }
 
-        get_list_as_json (args, util) {
-          let list;
-          try {
-            list = JSON.parse(args.list);
-          } catch {
-            return;
+        lookup_list(list, util) {
+          const byId = util.target.lookupVariableById(list);
+          if (byId && byId.type === "list") {
+            return byId;
           }
-          let content = util.target.lookupOrCreateList(list.id, list.name).value;
-  
-          return JSON.stringify(content.map(x => stringToEqivalint(x)));
+          const byName = util.target.lookupVariableByNameAndType(list, "list");
+          if (byName) {
+            return byName;
+          }
+          return null;
+        }
+
+        get_list_as_json (args, util) {
+          try {
+            let list_var = this.lookup_list(args.list, util);
+            if (list_var) {
+              return JSON.stringify(list_var.value.map(x => stringToEqivalint(x)));
+            }
+          } catch {
+            return "[]";
+          }
+          return "[]";
         }
 
         return_random (args) {
