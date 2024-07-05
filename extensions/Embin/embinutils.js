@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.16.3';
+    const embin_utils_version = 'v1.17.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -39,6 +39,10 @@
       'areas',
       'levels',
       'buildables',
+      'menus',
+      'settings',
+      'controls',
+      'categories',
       'level_backgrounds',
       'maps',
       'campaigns',
@@ -62,7 +66,24 @@
       'powerups',
       'consumables',
       'scripts',
-      'objects'
+      'objects',
+      'triggers',
+      'keys',
+      'genders',
+      'cosmetics',
+      'seasons',
+      'capes',
+      'days',
+      'nights',
+      'planets',
+      'solar_systems',
+      'galaxies',
+      'universes',
+      'dimensions',
+      'moons',
+      'stars',
+      'elements',
+      'materials'
     ];
 
     function reset_temp_vars() {
@@ -947,7 +968,41 @@
             },
 
             '---',
-            
+
+            {
+              opcode: 'set_json',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'set [item] in [json] to [value]',
+              arguments: {
+                item: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'key'
+                },
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"key":"what"}'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'water'
+                }
+              }
+            },
+            {
+              opcode: 'add_to_json_array',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'add [item] to array [json]',
+              arguments: {
+                item: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'true'
+                },
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '["real","thing"]'
+                }
+              }
+            },
             {
               opcode: 'merge_jsons',
               blockType: Scratch.BlockType.REPORTER,
@@ -998,6 +1053,33 @@
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: ''
+                }
+              }
+            },
+            {
+              opcode: 'beautify_json',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'beautify json [json]',
+              arguments: {
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"hey":"wow"}'
+                }
+              }
+            },
+            {
+              opcode: 'beautify_json_with_menu',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'beautify json [json] with [beautify_menu]',
+              arguments: {
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"hey":"wow"}'
+                },
+                beautify_menu: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '2 spaces',
+                  menu: 'json_beautifier_menu'
                 }
               }
             },
@@ -1298,6 +1380,15 @@
                     text: '(2) secondary',
                     value: '2'
                   }
+                ]
+              },
+              json_beautifier_menu: {
+                acceptReporters: true,
+                items: [
+                  '2 spaces',
+                  '3 spaces',
+                  '4 spaces',
+                  'tab character'
                 ]
               }
             }
@@ -1903,6 +1994,69 @@
               }
             }
             return JSON.stringify(new_array);
+          } catch {
+            return "[]";
+          }
+        }
+
+        beautify_json(args) {
+          try {
+            return JSON.stringify(JSON.parse(args.json), null, "\t");
+          } catch {
+            return "{}";
+          }
+        }
+
+        beautify_json_with_menu(args) {
+          try {
+            let mvalue = String(args.beautify_menu);
+            if (mvalue == "2 spaces") return JSON.stringify(JSON.parse(args.json), null, 2);
+            if (mvalue == "3 spaces") return JSON.stringify(JSON.parse(args.json), null, 3);
+            if (mvalue == "4 spaces") return JSON.stringify(JSON.parse(args.json), null, 4);
+            if (mvalue == "tab character") return JSON.stringify(JSON.parse(args.json), null, "\t");
+          } catch {
+            return "{}";
+          }
+          return JSON.stringify(JSON.parse(args.json), null, "\t");
+        }
+
+        json_valid_return(json) {
+          if (typeof json != "string") {
+            return json;
+          } else {
+            try {
+              return JSON.parse(json);
+            } catch {
+              return json;
+            }
+          }
+        }
+
+        fix_invalid_json_values(value) {
+          if (Number.isNaN(value)) return "NaN";
+          if (value === Infinity) return "Infinity";
+          if (value === -Infinity) return "-Infinity";
+          return value;
+        }
+
+        set_json({ item, value, json }) {
+          try {
+            json = JSON.parse(json);
+            value = this.json_valid_return(value);
+            value = this.fix_invalid_json_values(value);
+            json[item] = value;
+            return JSON.stringify(json);
+          } catch {
+            return "{}";
+          }
+        }
+
+        add_to_json_array({ item, json }) {
+          try {
+            json = JSON.parse(json);
+            item = this.fix_invalid_json_values(this.json_valid_return(item));
+            json.push(item);
+            return JSON.stringify(json);
           } catch {
             return "[]";
           }
