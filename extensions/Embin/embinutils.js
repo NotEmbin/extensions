@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.17.0';
+    const embin_utils_version = 'v1.17.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -83,7 +83,8 @@
       'moons',
       'stars',
       'elements',
-      'materials'
+      'materials',
+      'functions'
     ];
 
     function reset_temp_vars() {
@@ -1034,6 +1035,21 @@
               }
             },
             {
+              opcode: 'get_json_key_else_key',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [key] from [json] else return key',
+              arguments: {
+                key: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'sigma'
+                },
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{"sigma":"real","sigma3":"real3"}'
+                }
+              }
+            },
+            {
               opcode: 'get_list_as_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'get list [list] as array',
@@ -1052,7 +1068,7 @@
               arguments: {
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: ''
+                  defaultValue: '{ "hey": true }'
                 }
               }
             },
@@ -2059,6 +2075,16 @@
             return JSON.stringify(json);
           } catch {
             return "[]";
+          }
+        }
+
+        get_json_key_else_key({ key, json }) {
+          try {
+            json = JSON.parse(json);
+            if (json.hasOwnProperty(key)) return json[key];
+            return key;
+          } catch {
+            return key;
           }
         }
 
