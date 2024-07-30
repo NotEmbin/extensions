@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.0.0';
+    const embin_json_version = 'v1.0.1';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -843,7 +843,10 @@
         get_json({ json, key }) {
             try {
                 json = JSON.parse(json);
-                if (json.hasOwnProperty(key)) return json[key];
+                if (json.hasOwnProperty(key)) {
+                    if (typeof json[key] === "object") return JSON.stringify(json[key]);
+                    return json[key];
+                }
                 return "";
             } catch {
                 return "";
@@ -853,7 +856,10 @@
         get_json_else_key({ json, key }) {
             try {
                 json = JSON.parse(json);
-                if (json.hasOwnProperty(key)) return json[key];
+                if (json.hasOwnProperty(key)) {
+                    if (typeof json[key] === "object") return JSON.stringify(json[key]);
+                    return json[key];
+                }
                 return key;
             } catch {
                 return key;
