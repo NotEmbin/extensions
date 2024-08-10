@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.0.1';
+    const embin_json_version = 'v1.1.0';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -201,14 +201,14 @@
                     {
                         opcode: 'does_json_contain_key',
                         blockType: Scratch.BlockType.BOOLEAN,
-                        text: 'does [json] have key [key]',
+                        text: 'does object [json] have key [key]',
                         disableMonitor: true,
                         arguments: default_args_object_no_value
                     },
                     {
                         opcode: 'does_array_contain_value',
                         blockType: Scratch.BlockType.BOOLEAN,
-                        text: 'does [array] have value [value]',
+                        text: 'does array [array] have value [value]',
                         disableMonitor: true,
                         arguments: {
                             array: {
@@ -218,6 +218,22 @@
                             value: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: default_array_value
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'does_array_contain_string_value',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: 'does array [array] have string [value]',
+                        disableMonitor: true,
+                        arguments: {
+                            array: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '["1","2","3","4"]'
+                            },
+                            value: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '2'
                             }
                         }
                     },
@@ -234,6 +250,20 @@
                             json2: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: '{"b":2,"a":1}'
+                            }
+                        }
+                    },
+                    '---',
+                    {
+                        opcode: 'new_json',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'new [type]',
+                        disableMonitor: true,
+                        arguments: {
+                            type: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'object',
+                                menu: 'type_menu'
                             }
                         }
                     },
@@ -526,6 +556,43 @@
                     '---',
                     make_label("other"),
                     {
+                        opcode: 'json_array_sort',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'sort array [list] [order]',
+                        disableMonitor: true,
+                        arguments: {
+                            list: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '[1, 8, 5, 3.4]'
+                            },
+                            order: {
+                                type: Scratch.ArgumentType.STRING,
+                                menu: 'sort_order'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'json_object_sort',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'sort object [json] [order] by [sorted]',
+                        disableMonitor: true,
+                        hideFromPalette: true,
+                        arguments: {
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '{"b":"foo","c":"bar","a":"baz"}'
+                            },
+                            order: {
+                                type: Scratch.ArgumentType.STRING,
+                                menu: 'sort_order'
+                            },
+                            sorted: {
+                                type: Scratch.ArgumentType.STRING,
+                                menu: 'sort_type'
+                            },
+                        }
+                    },
+                    {
                         opcode: 'json_array_filter',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'get all values with key [key] in [json]',
@@ -637,7 +704,26 @@
                             'values',
                             'datas'
                         ]
-                    }
+                    },
+                    sort_order: {
+                        acceptReporters: true,
+                        items: [
+                            {
+                                text: 'in ascending order',
+                                value: 'ascending'
+                            },
+                            {
+                                text: 'in descending order',
+                                value: 'descending'
+                            },
+                            'numerically',
+                            'alphabetically'
+                        ]
+                    },
+                    sort_type: {
+                        acceptReporters: true,
+                        items: ['keys','values']
+                    },
                 }
             };
         }
@@ -1153,6 +1239,67 @@
                 return JSON.stringify(new_array);
             } catch {
                 return "[]";
+            }
+        }
+
+        new_json(args) {
+            switch(args.type) {
+                case "object":
+                    return "{}";
+                case "array":
+                    return "[]";
+                default:
+                    return "";
+            }
+        }
+
+        json_array_sort(args) {
+            let list;
+            try {
+                list = JSON.parse(args.list);
+            } catch {
+                return "";
+            }
+            if (!Array.isArray(list)) return "";
+      
+            if (args.order === "ascending") list.sort(Scratch.Cast.compare);
+            if (args.order === "descending") list.sort(Scratch.Cast.compare).reverse();
+            if (args.order === "numerically") list.sort((a, b) => a - b);
+            if (args.order === "alphabetically") list.sort();
+            return JSON.stringify(list);
+        }
+
+        json_object_sort(args) {
+            let base_json = args.json;
+            let json_keys = Object.keys(base_json);
+            if (args.sorted === "values") json_keys = Object.values(base_json);
+
+            if (args.order === "ascending") json_keys.sort(Scratch.Cast.compare);
+            if (args.order === "descending") json_keys.sort(Scratch.Cast.compare).reverse();
+            if (args.order === "numerically") json_keys.sort((a, b) => a - b);
+            if (args.order === "alphabetically") json_keys.sort();
+
+            if (args.sorted === "keys") {
+                const sorted_object = json_keys.reduce(
+                    (obj, key) => { 
+                      obj[key] = json_keys[key]; 
+                      return obj;
+                    }, 
+                    {}
+                );
+                return JSON.stringify(sorted_object);
+            }
+
+            return;
+        }
+
+        does_array_contain_string_value ({ array, value }) {
+            try {
+                array = JSON.parse(array);
+                value = String(value);
+                return array.includes(value);
+            } catch {
+                return false;
             }
         }
 
