@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.1.0';
+    const embin_json_version = 'v1.2.0';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -576,7 +576,7 @@
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'sort object [json] [order] by [sorted]',
                         disableMonitor: true,
-                        hideFromPalette: true,
+                        hideFromPalette: false,
                         arguments: {
                             json: {
                                 type: Scratch.ArgumentType.STRING,
@@ -629,6 +629,22 @@
                             text: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: 'flying,sigma'
+                            },
+                            d: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: ','
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'json_array_join',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'join string by array [json] with delimiter [d]',
+                        disableMonitor: true,
+                        arguments: {
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '["a","b","c","d"]'
                             },
                             d: {
                                 type: Scratch.ArgumentType.STRING,
@@ -722,7 +738,7 @@
                     },
                     sort_type: {
                         acceptReporters: true,
-                        items: ['keys','values']
+                        items: ['keys']
                     },
                 }
             };
@@ -1270,7 +1286,7 @@
         }
 
         json_object_sort(args) {
-            let base_json = args.json;
+            let base_json = JSON.parse(args.json);
             let json_keys = Object.keys(base_json);
             if (args.sorted === "values") json_keys = Object.values(base_json);
 
@@ -1279,18 +1295,16 @@
             if (args.order === "numerically") json_keys.sort((a, b) => a - b);
             if (args.order === "alphabetically") json_keys.sort();
 
+            let new_json = {};
+
             if (args.sorted === "keys") {
-                const sorted_object = json_keys.reduce(
-                    (obj, key) => { 
-                      obj[key] = json_keys[key]; 
-                      return obj;
-                    }, 
-                    {}
-                );
-                return JSON.stringify(sorted_object);
+                for (let key of json_keys) {
+                    new_json[key] = base_json[key];
+                }
+                return JSON.stringify(new_json);
             }
 
-            return;
+            return args.json;
         }
 
         does_array_contain_string_value ({ array, value }) {
@@ -1300,6 +1314,14 @@
                 return array.includes(value);
             } catch {
                 return false;
+            }
+        }
+
+        json_array_join ({ json, d }) {
+            try {
+                return JSON.parse(json).join(d);
+            } catch {
+                return "";
             }
         }
 
