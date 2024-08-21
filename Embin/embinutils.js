@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.17.1';
+    const embin_utils_version = 'v1.17.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -84,7 +84,15 @@
       'stars',
       'elements',
       'materials',
-      'functions'
+      'functions',
+      'currencies',
+      'challenges',
+      'variables',
+      'cameras',
+      'extensions',
+      'sounds',
+      'sound_groups',
+      'dlcs'
     ];
 
     function reset_temp_vars() {
