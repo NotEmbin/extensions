@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.2.0';
+    const embin_json_version = 'v1.2.1';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -872,9 +872,9 @@
             //if (!this.json_is_valid({ json: json })) return false;
             try {
                 json = JSON.parse(json);
-                if (json == null) return false;
-                if (json == true) return false;
-                if (json == false) return false;
+                if (json === null) return false;
+                if (json === true) return false;
+                if (json === false) return false;
                 switch (type) {
                     case "object":
                         return !Array.isArray(json);
