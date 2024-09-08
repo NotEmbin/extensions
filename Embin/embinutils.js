@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.17.2';
+    const embin_utils_version = 'v1.18.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -92,7 +92,9 @@
       'extensions',
       'sounds',
       'sound_groups',
-      'dlcs'
+      'dlcs',
+      'missions',
+      'objectives'
     ];
 
     function reset_temp_vars() {
@@ -175,10 +177,10 @@
             color2: '#3A0101',
             blocks: [
             {
-                opcode: 'return_version',
-                blockType: Scratch.BlockType.REPORTER,
-                disableMonitor: true,
-                text: '"Embin\'s Utils" version'
+              opcode: 'return_version',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: '"Embin\'s Utils" version'
             },
 
             '---',
@@ -326,6 +328,39 @@
                 }
               }
             },
+            {
+              opcode: 'return_id_with_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'return id [string]',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'cool_stuff'
+                }
+              }
+            },
+            {
+              opcode: 'id_has_namespace',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does id [string] have a namespace?',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'project:cool_stuff'
+                }
+              }
+            },
+            {
+              opcode: 'convert_to_id_with_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'convert [string] to valid id',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Crazy stuff, dude'
+                }
+              }
+            },
             
             '---',
 
@@ -394,6 +429,50 @@
               blockType: Scratch.BlockType.REPORTER,
               text: 'sprite name',
               disableMonitor: false
+            },
+            {
+              opcode: 'get_user_language',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'user language code',
+              disableMonitor: false
+            },
+
+            '---',
+            
+            {
+              func: 'open_tolocalestring_docs',
+              blockType: Scratch.BlockType.BUTTON,
+              text: 'locale string documentation'
+            },
+            {
+              opcode: 'convert_number_to_locale_string',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'number [number] to locale string',
+              arguments: {
+                number: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '32767'
+                }
+              }
+            },
+            {
+              opcode: 'convert_number_to_locale_string_with_data',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'number [number] to locale string with lang [lang] and args [localeargs]',
+              arguments: {
+                number: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '32767.123'
+                },
+                lang: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'en-US'
+                },
+                localeargs: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '"maximumSignificantDigits":7'
+                }
+              }
             },
 
             '---',
@@ -585,17 +664,6 @@
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'Why, hello there!'
                   //defaultValue: 'Hello Embin & the World'
-                }
-              }
-            },
-            {
-              opcode: 'convert_to_id_with_namespace',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'convert [string] to valid id',
-              arguments: {
-                string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'Crazy stuff, dude'
                 }
               }
             },
@@ -2094,6 +2162,37 @@
           } catch {
             return key;
           }
+        }
+
+        return_id_with_namespace (args) {
+          return add_namespace_to_string(args.string);
+        }
+
+        id_has_namespace (args) {
+          return args.string.includes(":");
+        }
+
+        convert_number_to_locale_string (args) {
+          let number = Number(args.number);
+          return (number || 0).toLocaleString();
+        }
+
+        convert_number_to_locale_string_with_data (args) {
+          let number = Number(args.number);
+          let lang = String(args.lang);
+          if (lang == "") {
+            lang = "en-US"
+          }
+          let localeargs = JSON.parse("{"+args.localeargs+"}");
+          return (number || 0).toLocaleString(lang, localeargs);
+        }
+
+        get_user_language (args) {
+          return navigator.language || navigator.userLanguage;
+        }
+
+        open_tolocalestring_docs () {
+          Scratch.openWindow("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString#checking_for_support_for_locales_and_options_parameters");
         }
 
       } // end of blocks code
