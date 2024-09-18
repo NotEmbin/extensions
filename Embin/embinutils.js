@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.18.0';
+    const embin_utils_version = 'v1.18.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -132,7 +132,7 @@
     }
 
     //const argbuffer = '#';
-    const hide_legacy_blocks = true;
+    let hide_legacy_blocks = true;
     const is_packaged = Scratch.vm.runtime.isPackaged;
     const inff = (777 ** 777);
     const nnaann = (inff - inff);
@@ -358,6 +358,22 @@
                 string: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'Crazy stuff, dude'
+                }
+              }
+            },
+            {
+              opcode: 'get_namespace_from_id',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [type] from [id]',
+              arguments: {
+                id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'project:cool_stuff'
+                },
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'namespace',
+                  menu: 'namespace_get_types'
                 }
               }
             },
@@ -1050,6 +1066,7 @@
               opcode: 'set_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'set [item] in [json] to [value]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 item: {
                   type: Scratch.ArgumentType.STRING,
@@ -1069,6 +1086,7 @@
               opcode: 'add_to_json_array',
               blockType: Scratch.BlockType.REPORTER,
               text: 'add [item] to array [json]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 item: {
                   type: Scratch.ArgumentType.STRING,
@@ -1084,6 +1102,7 @@
               opcode: 'merge_jsons',
               blockType: Scratch.BlockType.REPORTER,
               text: 'merge json [first] and [second]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 first: {
                   type: Scratch.ArgumentType.STRING,
@@ -1099,6 +1118,7 @@
               opcode: 'remove_array_from_array',
               blockType: Scratch.BlockType.REPORTER,
               text: 'remove array [remove] from [base]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 remove: {
                   type: Scratch.ArgumentType.STRING,
@@ -1114,6 +1134,7 @@
               opcode: 'get_json_key_else_key',
               blockType: Scratch.BlockType.REPORTER,
               text: 'get [key] from [json] else return key',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 key: {
                   type: Scratch.ArgumentType.STRING,
@@ -1129,6 +1150,7 @@
               opcode: 'get_list_as_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'get list [list] as array',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 list: {
                   type: Scratch.ArgumentType.STRING,
@@ -1141,6 +1163,7 @@
               opcode: 'format_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'minify json [jjson]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 jjson: {
                   type: Scratch.ArgumentType.STRING,
@@ -1152,6 +1175,7 @@
               opcode: 'beautify_json',
               blockType: Scratch.BlockType.REPORTER,
               text: 'beautify json [json]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 json: {
                   type: Scratch.ArgumentType.STRING,
@@ -1163,6 +1187,7 @@
               opcode: 'beautify_json_with_menu',
               blockType: Scratch.BlockType.REPORTER,
               text: 'beautify json [json] with [beautify_menu]',
+              hideFromPalette: hide_legacy_blocks,
               arguments: {
                 json: {
                   type: Scratch.ArgumentType.STRING,
@@ -1481,6 +1506,13 @@
                   '3 spaces',
                   '4 spaces',
                   'tab character'
+                ]
+              },
+              namespace_get_types: {
+                acceptReporters: true,
+                items: [
+                  'namespace',
+                  'id'
                 ]
               }
             }
@@ -2193,6 +2225,26 @@
 
         open_tolocalestring_docs () {
           Scratch.openWindow("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString#checking_for_support_for_locales_and_options_parameters");
+        }
+
+        get_namespace_from_id (args) {
+          let type = args.type;
+          let namespaced_id = String(args.id);
+          let split_id = namespaced_id.split(":") || "";
+          if(split_id.length == 1) {
+            split_id = add_namespace_to_string(namespaced_id).split(":") || "";
+          }
+          if(split_id > 2) {
+            split_id.length = 2;
+          }
+          switch (type) {
+            case "namespace":
+              return split_id[0];
+            case "id":
+              return split_id[1];
+            default:
+              return namespaced_id;
+          }
         }
 
       } // end of blocks code
