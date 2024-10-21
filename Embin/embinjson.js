@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.3.0';
+    const embin_json_version = 'v1.4.0-rc1';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -358,6 +358,13 @@
                         arguments: default_args_object
                     },
                     {
+                        opcode: 'set_json_string',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'set [key] in [json] to string [value]',
+                        disableMonitor: true,
+                        arguments: default_args_object
+                    },
+                    {
                         opcode: 'get_json',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'get [key] in [json]',
@@ -427,6 +434,13 @@
                         opcode: 'add_to_json_array',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'add [item] to [json]',
+                        disableMonitor: true,
+                        arguments: default_args_array
+                    },
+                    {
+                        opcode: 'add_string_to_json_array',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'add string [item] to [json]',
                         disableMonitor: true,
                         arguments: default_args_array
                     },
@@ -1387,6 +1401,28 @@
             if (typeof value === "number" && args.type === "number") return true;
             if (type === args.type) return true;
             return false;
+        }
+
+        set_json_string({ json, key, value }) {
+            try {
+                json = JSON.parse(json);
+                value = String(value);
+                json[key] = value;
+                return JSON.stringify(json);
+            } catch {
+                return "{}";
+            }
+        }
+
+        add_string_to_json_array ({ item, json }) {
+            try {
+                json = JSON.parse(json);
+                item = String(item);
+                json.push(item);
+                return JSON.stringify(json);
+            } catch {
+                return "[]";
+            }
         }
 
     } // end of blocks code
