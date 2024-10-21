@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.4.0-rc1';
+    const embin_json_version = 'v1.4.0-rc2';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -692,6 +692,33 @@
                             d: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: ','
+                            }
+                        }
+                    },
+                    '---',
+                    {
+                        opcode: 'as_value_types',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '[types]',
+                        disableMonitor: true,
+                        arguments: {
+                            types: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'string',
+                                menu: 'value_types'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'as_type_menu',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '[types]',
+                        disableMonitor: true,
+                        arguments: {
+                            types: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'object',
+                                menu: 'type_menu'
                             }
                         }
                     },
@@ -1423,6 +1450,14 @@
             } catch {
                 return "[]";
             }
+        }
+
+        as_value_types (args) {
+            return String(args.types);
+        }
+
+        as_type_menu (args) {
+            return String(args.types);
         }
 
     } // end of blocks code
