@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.2.1';
+    const embin_json_version = 'v1.3.0';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -206,6 +206,27 @@
                         arguments: default_args_object_no_value
                     },
                     {
+                        opcode: 'is_type',
+                        blockType: Scratch.BlockType.BOOLEAN,
+                        text: 'is [key] of [json] a [type]',
+                        disableMonitor: true,
+                        arguments: {
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: default_json
+                            },
+                            key: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: default_key
+                            },
+                            type: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'string',
+                                menu: 'value_types'
+                            }
+                        }
+                    },
+                    {
                         opcode: 'does_array_contain_value',
                         blockType: Scratch.BlockType.BOOLEAN,
                         text: 'does array [array] have value [value]',
@@ -368,6 +389,14 @@
                                 defaultValue: 'hey/test'
                             }
                         }
+                    },
+                    {
+                        opcode: 'type_of_value',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'get type of [key] in [json]',
+                        allowDropAnywhere: true,
+                        disableMonitor: true,
+                        arguments: default_args_object_no_value
                     },
                     {
                         opcode: 'merge_jsons',
@@ -740,6 +769,20 @@
                         acceptReporters: true,
                         items: ['keys']
                     },
+                    value_types: {
+                        acceptReporters: true,
+                        items: [
+                            'string',
+                            'number',
+                            'boolean',
+                            'object',
+                            'array',
+                            'integer',
+                            'float',
+                            'null',
+                            'undefined'
+                        ]
+                    }
                 }
             };
         }
@@ -1265,7 +1308,7 @@
                 case "array":
                     return "[]";
                 default:
-                    return "";
+                    return "{}";
             }
         }
 
@@ -1323,6 +1366,27 @@
             } catch {
                 return "";
             }
+        }
+
+        type_of_value (args) {
+            let json = JSON.parse(args.json);
+            let value = json[args.key];
+            let type = typeof value;
+            if (type === "number") {
+                if (Number.isInteger(value)) return "integer";
+                return "float";
+            }
+            if (Array.isArray(value)) return "array";
+            if (value === null) return "null";
+            return type;
+        }
+
+        is_type (args) {
+            let value = JSON.parse(args.json)[args.key];
+            let type = this.type_of_value(args);
+            if (typeof value === "number" && args.type === "number") return true;
+            if (type === args.type) return true;
+            return false;
         }
 
     } // end of blocks code

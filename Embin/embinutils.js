@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.18.1';
+    const embin_utils_version = 'v1.18.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -22,6 +22,10 @@
 
     const vm = Scratch.vm;
     const Cast = Scratch.Cast;
+
+    let id_regex = new RegExp("^[a-z0-9:_./-]+$");
+    let path_regex = new RegExp("^[a-z0-9_./-]+$");
+    let namespace_regex = new RegExp("^[a-z0-9_.-]+$");
 
     let temp_vars = Object.create(null);
 
@@ -134,14 +138,17 @@
     //const argbuffer = '#';
     let hide_legacy_blocks = true;
     const is_packaged = Scratch.vm.runtime.isPackaged;
-    const inff = (777 ** 777);
-    const nnaann = (inff - inff);
     var fallback_costume_name = 'fallback';
     var namespace = 'engine';
 
     function add_namespace_to_string(string) {
-      if (!(string.includes(":"))) return (namespace + ":" + string);
-      return string;
+      if (!(string.includes(":"))) {
+        if (!path_regex.test(String(string))) throw new Error("Invalid path: \"" + string + "\"");
+        return (namespace + ":" + string);
+      } else {
+        if (!id_regex.test(String(string))) throw new Error("Invalid ID: \"" + string + "\"");
+        return string;
+      }
     }
 
     function stringToEqivalint(value) {
@@ -292,6 +299,25 @@
                 two: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'hey'
+                }
+              }
+            },
+            {
+              opcode: 'is_number_in_range',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'is [number] in range [min] [max]',
+              arguments: {
+                number: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '12'
+                },
+                min: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '0'
+                },
+                max: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '255'
                 }
               }
             },
@@ -707,6 +733,18 @@
               text: 'js: Math.random()'
             },
             {
+              opcode: 'return_max_number',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Number.MAX_SAFE_INTEGER'
+            },
+            {
+              opcode: 'return_min_number',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Number.MIN_SAFE_INTEGER'
+            },
+            {
               opcode: 'if_else_green_flag_reporter',
               blockType: Scratch.BlockType.REPORTER,
               text: 'OLD | if [if] then [then] else run green flag',
@@ -900,6 +938,20 @@
               opcode: 'clear_console',
               blockType: Scratch.BlockType.COMMAND,
               text: 'clear console'
+            },
+            {
+              opcode: 'throw_error_if_false',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'if [cond] is false, throw error [error]',
+              arguments: {
+                cond: {
+                  type: Scratch.ArgumentType.BOOLEAN
+                },
+                error: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'something'
+                }
+              }
             },
             {
               opcode: 'throw_error',
@@ -1732,12 +1784,12 @@
         }
 
         return_nan(args) {
-          return nnaann;
+          return Number.NaN;
           //return ((777 ** 777) - (777 ** 777));
         }
 
         return_infinity(args) {
-          return inff;
+          return Number.POSITIVE_INFINITY;
           //return (777 ** 777);
         }
 
@@ -2020,7 +2072,7 @@
         }
 
         return_negative_infinity (args) {
-          return (0 - inff);
+          return Number.NEGATIVE_INFINITY;
         }
 
         return_literal_null (args) {
@@ -2092,6 +2144,7 @@
         }
 
         set_namespace(args) {
+          if (!namespace_regex.test(String(args.new_namespace))) throw new Error("Invalid namespace!");
           namespace = args.new_namespace;
         }
 
@@ -2127,7 +2180,7 @@
           try {
             return JSON.stringify(JSON.parse(args.json), null, "\t");
           } catch {
-            return "{}";
+            return "";
           }
         }
 
@@ -2139,7 +2192,7 @@
             if (mvalue == "4 spaces") return JSON.stringify(JSON.parse(args.json), null, 4);
             if (mvalue == "tab character") return JSON.stringify(JSON.parse(args.json), null, "\t");
           } catch {
-            return "{}";
+            return "";
           }
           return JSON.stringify(JSON.parse(args.json), null, "\t");
         }
@@ -2235,7 +2288,7 @@
             split_id = add_namespace_to_string(namespaced_id).split(":") || "";
           }
           if(split_id > 2) {
-            split_id.length = 2;
+            throw new Error("Invalid ID: \"" + string + "\"");
           }
           switch (type) {
             case "namespace":
@@ -2245,6 +2298,49 @@
             default:
               return namespaced_id;
           }
+        }
+
+        data_uri_from_image_url (args) {
+          return new Promise(resolve => {
+            if (window && !window.FileReader) return resolve("");
+            if (window && !window.fetch) return resolve("");
+            fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(String(args.url))}`).then(r => {
+              r.blob().then(blob => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                  resolve(e.target.result);
+                };
+                reader.readAsDataURL(blob);
+              })
+              .catch(() => {
+                resolve("");
+              });
+            })
+            .catch(() => {
+              resolve("");
+            });
+          });
+        }
+
+        is_number_in_range (args) {
+          let number = Number(args.number);
+          let max = Number(args.max);
+          let min = Number(args.min);
+          if (number > max) return false;
+          if (number < min) return false;
+          return true;
+        }
+
+        return_max_number (args) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+
+        return_min_number (args) {
+          return Number.MIN_SAFE_INTEGER;
+        }
+
+        throw_error_if_false (args) {
+          if (!Boolean(args.cond)) throw new Error(String(args.error));
         }
 
       } // end of blocks code
