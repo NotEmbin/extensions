@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.18.2';
+    const embin_utils_version = 'v1.18.3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -2060,7 +2060,6 @@
             //value = this.json_valid_return(args.thing);
             return data.includes('"' + args.thing + '"');
           } catch {
-            console.error("failed try statement");
             return false;
           }
         }
