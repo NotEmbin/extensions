@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.18.3';
+    const embin_utils_version = 'v1.19.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -20,6 +20,11 @@
       return return_value; 
     }
 
+    const make_label = (text) => ({
+      blockType: "label",
+      text: text,
+    });
+
     const vm = Scratch.vm;
     const Cast = Scratch.Cast;
 
@@ -30,7 +35,7 @@
     let temp_vars = Object.create(null);
 
     let tags = Object.create(null);
-    let tag_name_delimeter = "/";
+    let tag_name_delimeter = "#";
     const v_tag_types = [
       'characters',
       'enemies',
@@ -98,7 +103,20 @@
       'sound_groups',
       'dlcs',
       'missions',
-      'objectives'
+      'objectives',
+      'animals',
+      'experiments',
+      'feature_flags',
+      'recipes',
+      'advancements',
+      'instruments',
+      'damage_types',
+      'loot_tables',
+      'jukebox_songs',
+      'structures',
+      'patterns',
+      'banner_patterns',
+      'trim_patterns'
     ];
 
     function reset_temp_vars() {
@@ -132,7 +150,7 @@
       if (a == 'no') return 'No';
       if (a == 'stop project') {utility.stopAll();}
       if (a == 'stop script') {utility.stopThisScript();}
-      return;
+      return "";
     }
 
     //const argbuffer = '#';
@@ -303,6 +321,36 @@
               }
             },
             {
+              opcode: 'greater_than_equal',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: '[one] >= [two]',
+              arguments: {
+                one: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '3'
+                },
+                two: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '2'
+                }
+              }
+            },
+            {
+              opcode: 'less_than_equal',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: '[one] <= [two]',
+              arguments: {
+                one: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '3'
+                },
+                two: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '2'
+                }
+              }
+            },
+            {
               opcode: 'is_number_in_range',
               blockType: Scratch.BlockType.BOOLEAN,
               text: 'is [number] in range [min] [max]',
@@ -330,76 +378,6 @@
                 anything: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'Howdy'
-                }
-              }
-            },
-
-            '---',
-
-            {
-              opcode: 'return_namespace',
-              blockType: Scratch.BlockType.REPORTER,
-              disableMonitor: false,
-              text: 'namespace'
-            },
-            {
-              opcode: 'set_namespace',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'set namespace to [new_namespace]',
-              disableMonitor: true,
-              arguments: {
-                new_namespace: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'engine'
-                }
-              }
-            },
-            {
-              opcode: 'return_id_with_namespace',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'return id [string]',
-              arguments: {
-                string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'cool_stuff'
-                }
-              }
-            },
-            {
-              opcode: 'id_has_namespace',
-              blockType: Scratch.BlockType.BOOLEAN,
-              text: 'does id [string] have a namespace?',
-              arguments: {
-                string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'project:cool_stuff'
-                }
-              }
-            },
-            {
-              opcode: 'convert_to_id_with_namespace',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'convert [string] to valid id',
-              arguments: {
-                string: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'Crazy stuff, dude'
-                }
-              }
-            },
-            {
-              opcode: 'get_namespace_from_id',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'get [type] from [id]',
-              arguments: {
-                id: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'project:cool_stuff'
-                },
-                type: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'namespace',
-                  menu: 'namespace_get_types'
                 }
               }
             },
@@ -652,6 +630,56 @@
               }
             },
             {
+              opcode: 'join_four',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'join [thing_1] [thing_2] [thing_3] [thing_4]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                },
+                thing_3: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'c'
+                },
+                thing_4: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'd'
+                }
+              }
+            },
+            {
+              opcode: 'join_five',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'join [thing_1] [thing_2] [thing_3] [thing_4] [thing_5]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                },
+                thing_3: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'c'
+                },
+                thing_4: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'd'
+                },
+                thing_5: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'e'
+                }
+              }
+            },
+            {
               opcode: 'insert_in_string',
               blockType: Scratch.BlockType.REPORTER,
               text: 'insert [add_string] into [og_string] at [index]', // w/ buffer [buffer]',
@@ -743,6 +771,18 @@
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
               text: 'js: Number.MIN_SAFE_INTEGER'
+            },
+            {
+              opcode: 'return_max_value',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Number.MAX_VALUE'
+            },
+            {
+              opcode: 'return_min_value',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: Number.MIN_VALUE'
             },
             {
               opcode: 'if_else_green_flag_reporter',
@@ -981,73 +1021,6 @@
             '---',
 
             {
-              opcode: 'set_var',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'set var [name] to [value]',
-              disableMonitor: true,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'name'
-                },
-                value: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'value'
-                }
-              }
-            },
-            {
-              opcode: 'get_var',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'get var [name]',
-              disableMonitor: true,
-              allowDropAnywhere: true,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'name'
-                }
-              }
-            },
-            {
-              opcode: 'does_var_exist',
-              blockType: Scratch.BlockType.BOOLEAN,
-              text: 'does var [name] exist?',
-              disableMonitor: true,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'name'
-                }
-              }
-            },
-            {
-              opcode: 'delete_var',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'delete var [name]',
-              disableMonitor: true,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'name'
-                }
-              }
-            },
-            {
-              opcode: 'delete_all_vars',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'delete all variables',
-              disableMonitor: true
-            },
-            {
-              opcode: 'return_list_of_vars',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'all current variables'
-            },
-
-            '---',
-
-            {
               opcode: 'return_fallback_costume',
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
@@ -1078,6 +1051,79 @@
                 fcostume: {
                   type: Scratch.ArgumentType.COSTUME,
                   defaultValue: 'fallback'
+                }
+              }
+            },
+
+            '---',
+
+            {
+              opcode: 'unsigned_8',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '8-bit unsigned [num]',
+              arguments: {
+                num: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '-1'
+                }
+              }
+            },
+            {
+                opcode: 'unsigned_16',
+                blockType: Scratch.BlockType.REPORTER,
+                text: '16-bit unsigned [num]',
+                arguments: {
+                  num: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: '-1'
+                }
+              }
+            },
+            {
+                opcode: 'unsigned_32',
+                blockType: Scratch.BlockType.REPORTER,
+                text: '32-bit unsigned [num]',
+                arguments: {
+                  num: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: '-1'
+                }
+              }
+            },
+
+            '---',
+
+            {
+                opcode: 'signed_8',
+                blockType: Scratch.BlockType.REPORTER,
+                text: '8-bit signed [num]',
+                disableMonitor: true,
+                arguments: {
+                  num: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: '127'
+                }
+              }
+            },
+            {
+                opcode: 'signed_16',
+                blockType: Scratch.BlockType.REPORTER,
+                text: '16-bit signed [num]',
+                arguments: {
+                  num: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: '32767'
+                }
+              }
+            },
+            {
+                opcode: 'signed_32',
+                blockType: Scratch.BlockType.REPORTER,
+                text: '32-bit signed [num]',
+                arguments: {
+                  num: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: '2147483647'
                 }
               }
             },
@@ -1252,8 +1298,77 @@
                 }
               }
             },
+
+            '---',
+            make_label("Variables"),
+
+            {
+              opcode: 'set_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set var [name] to [value]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'value'
+                }
+              }
+            },
+            {
+              opcode: 'get_var',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get var [name]',
+              disableMonitor: true,
+              allowDropAnywhere: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'does_var_exist',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does var [name] exist?',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'delete_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete var [name]',
+              disableMonitor: true,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'name'
+                }
+              }
+            },
+            {
+              opcode: 'delete_all_vars',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete all variables',
+              disableMonitor: true
+            },
+            {
+              opcode: 'return_list_of_vars',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current variables'
+            },
             
             '---',
+            make_label("Tags"),
 
             {
               opcode: 'set_tag',
@@ -1393,74 +1508,100 @@
             },
 
             '---',
+            make_label("IDs"),
 
             {
-              opcode: 'unsigned_8',
+              opcode: 'return_namespace',
               blockType: Scratch.BlockType.REPORTER,
-              text: '8-bit unsigned [num]',
+              disableMonitor: false,
+              text: 'namespace'
+            },
+            {
+              opcode: 'set_namespace',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set namespace to [new_namespace]',
+              disableMonitor: true,
               arguments: {
-                num: {
-                  type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: '-1'
+                new_namespace: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'engine'
                 }
               }
             },
             {
-                opcode: 'unsigned_16',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '16-bit unsigned [num]',
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '-1'
+              opcode: 'return_id_with_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'return id [string]',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'cool_stuff'
                 }
               }
             },
             {
-                opcode: 'unsigned_32',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '32-bit unsigned [num]',
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '-1'
+              opcode: 'id_has_namespace',
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: 'does id [string] have a namespace?',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'project:cool_stuff'
+                }
+              }
+            },
+            {
+              opcode: 'convert_to_id_with_namespace',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'convert [string] to valid id',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'Crazy stuff, dude'
+                }
+              }
+            },
+            {
+              opcode: 'get_namespace_from_id',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [type] from [id]',
+              arguments: {
+                id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'project:cool_stuff'
+                },
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'namespace',
+                  menu: 'namespace_get_types'
                 }
               }
             },
 
             '---',
+            make_label("Zip Utilities"),
 
             {
-                opcode: 'signed_8',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '8-bit signed [num]',
-                disableMonitor: true,
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '127'
+              opcode: 'get_dir_extended',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all files from directory [DIR]',
+              disableMonitor: true,
+              arguments: {
+                DIR: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '.'
                 }
               }
             },
             {
-                opcode: 'signed_16',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '16-bit signed [num]',
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '32767'
-                }
-              }
-            },
-            {
-                opcode: 'signed_32',
-                blockType: Scratch.BlockType.REPORTER,
-                text: '32-bit signed [num]',
-                arguments: {
-                  num: {
-                    type: Scratch.ArgumentType.NUMBER,
-                    defaultValue: '2147483647'
+              opcode: 'remove_file_extension',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'remove extension from file path [path]',
+              disableMonitor: true,
+              arguments: {
+                path: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'folder/image.png'
                 }
               }
             }
@@ -2340,6 +2481,64 @@
 
         throw_error_if_false (args) {
           if (!Boolean(args.cond)) throw new Error(String(args.error));
+        }
+
+        greater_than_equal (args) {
+          return args.one >= args.two;
+        }
+
+        less_than_equal (args) {
+          return args.one <= args.two;
+        }
+
+        return_max_value (args) {
+          return Number.MAX_VALUE;
+        }
+
+        return_min_value (args) {
+          return Number.MIN_VALUE;
+        }
+
+        get_dir_extended ({DIR}) {
+            const ZIP = Scratch.vm.runtime.ext_cst1229zip;
+            if (!ZIP.zip) return "";
+            try {
+                DIR = Scratch.Cast.toString(DIR);
+                if (!DIR.endsWith("/")) DIR += "/";
+
+                const normalized = ZIP.normalize(ZIP.zipPaths[ZIP.zip], DIR);
+                if (!ZIP.getObj(normalized) && normalized !== "/") return "";
+                const dir = normalized.substring(1);
+                const length = dir.length;
+
+                return JSON.stringify(
+                    Object.values(ZIP.zips[ZIP.zip].files)
+                        .filter((obj) => {
+                            if (!obj.name.startsWith(dir)) return false; // Above the current directory
+                            if (obj.name.endsWith("/")) return false;
+                            if (obj.name === dir) return false; // Is the current directory
+
+                            return true;
+                        })
+                        .map((obj) => obj.name.substring(length))
+                );
+            } catch (e) {
+                return "";
+            }
+        }
+
+        join_four (args) {
+          return String(args.thing_1) + String(args.thing_2) + String(args.thing_3) + String(args.thing_4);
+        }
+
+        join_five (args) {
+          return String(args.thing_1) + String(args.thing_2) + String(args.thing_3) + String(args.thing_4) + String(args.thing_5);
+        }
+
+        remove_file_extension (args) {
+          let splitted_path = String(args.path).split(".");
+          splitted_path.splice(splitted_path.length - 1, 1);
+          return splitted_path.join(".");
         }
 
       } // end of blocks code
