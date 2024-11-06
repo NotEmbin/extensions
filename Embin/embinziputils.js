@@ -9,11 +9,11 @@
     if (!Scratch.extensions.unsandboxed) {
       throw new Error('Zip Utils must be ran unsandboxed');
     }
-    if (!Scratch.vm.extensionManager.isExtensionLoaded("cst1229zip")) {
-        Scratch.vm.runtime.extensionManager.loadExtensionURL("https://extensions.turbowarp.org/CST1229/zip.js");
-    }
+    //if (!Scratch.vm.extensionManager.isExtensionLoaded("cst1229zip")) {
+    //    Scratch.vm.runtime.extensionManager.loadExtensionURL("https://extensions.turbowarp.org/CST1229/zip.js");
+    //}
 
-    const embin_zip_utils_version = 'v1.0.0';
+    const embin_zip_utils_version = 'v1.1.0';
     var ZIP = Scratch.vm.runtime.ext_cst1229zip;
 
     Scratch.vm.runtime.on("EXTENSION_ADDED", () => {
@@ -27,6 +27,13 @@
                 name: "Zip Utils",
                 blocks: [
                     {
+                        opcode: 'return_version',
+                        blockType: Scratch.BlockType.REPORTER,
+                        disableMonitor: true,
+                        text: '"Zip Utils" version'
+                    },
+                    '---',
+                    {
                         opcode: 'get_dir_extended',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'all files from directory [DIR]',
@@ -35,6 +42,18 @@
                             DIR: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: '.'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'remove_file_extension',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'remove extension from file path [path]',
+                        disableMonitor: true,
+                        arguments: {
+                            path: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'folder/image.png'
                             }
                         }
                     }
@@ -73,6 +92,12 @@
                 //console.error(`Zip extension: Could not get directory ${DIR}:`, e);
                 return "";
             }
+        }
+
+        remove_file_extension (args) {
+            let splitted_path = String(args.path).split(".");
+            splitted_path.splice(splitted_path.length - 1, 1);
+            return splitted_path.join(".");
         }
 
     } // end of blocks code
