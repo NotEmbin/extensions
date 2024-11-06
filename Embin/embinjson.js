@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.3.0';
+    const embin_json_version = 'v1.4.0';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -24,6 +24,10 @@
         blockType: "label",
         text: text,
     });
+
+    function get_random_int(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
     // i STOLE this function from PENGUINMOD i STOLE IT I STOLE IT!!!!!!! i COPIED and PASTED!!!!!
     function stringToEqivalint(value) {
@@ -358,6 +362,13 @@
                         arguments: default_args_object
                     },
                     {
+                        opcode: 'set_json_string',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'set [key] in [json] to string [value]',
+                        disableMonitor: true,
+                        arguments: default_args_object
+                    },
+                    {
                         opcode: 'get_json',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'get [key] in [json]',
@@ -431,6 +442,13 @@
                         arguments: default_args_array
                     },
                     {
+                        opcode: 'add_string_to_json_array',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'add string [item] to [json]',
+                        disableMonitor: true,
+                        arguments: default_args_array
+                    },
+                    {
                         opcode: 'json_array_get',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'item [item] of [json]',
@@ -444,6 +462,19 @@
                         text: 'item # of [item] in [json]',
                         disableMonitor: true,
                         arguments: default_args_array
+                    },
+                    {
+                        opcode: 'json_array_get_random',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'random item of [json]',
+                        allowDropAnywhere: true,
+                        disableMonitor: true,
+                        arguments: {
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: default_array
+                            }
+                        }
                     },
                     {
                         opcode: 'json_array_from_to',
@@ -678,6 +709,33 @@
                             d: {
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: ','
+                            }
+                        }
+                    },
+                    '---',
+                    {
+                        opcode: 'as_value_types',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '[types]',
+                        disableMonitor: true,
+                        arguments: {
+                            types: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'string',
+                                menu: 'value_types'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'as_type_menu',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: '[types]',
+                        disableMonitor: true,
+                        arguments: {
+                            types: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'object',
+                                menu: 'type_menu'
                             }
                         }
                     },
@@ -1387,6 +1445,61 @@
             if (typeof value === "number" && args.type === "number") return true;
             if (type === args.type) return true;
             return false;
+        }
+
+        set_json_string({ json, key, value }) {
+            try {
+                json = JSON.parse(json);
+                value = String(value);
+                json[key] = value;
+                return JSON.stringify(json);
+            } catch {
+                return "{}";
+            }
+        }
+
+        add_string_to_json_array ({ item, json }) {
+            try {
+                json = JSON.parse(json);
+                item = String(item);
+                json.push(item);
+                return JSON.stringify(json);
+            } catch {
+                return "[]";
+            }
+        }
+
+        as_value_types (args) {
+            return String(args.types);
+        }
+
+        as_type_menu (args) {
+            return String(args.types);
+        }
+
+        json_array_get_random ({ json }) {
+            // 1...length : array content, -1...-length : reverse array content, 0 : ERROR
+            try {
+                json = JSON.parse(json);
+                let item = Scratch.Cast.toNumber(get_random_int(1, json.length));
+                if (item == 0) return "";
+                if (item > 0) {
+                    item--;
+                }
+                let result;
+                if (item >= 0) {
+                    result = json[item];
+                } else {
+                    result = json[json.length + item];
+                }
+                if (typeof result == "object") {
+                    return JSON.stringify(result);
+                } else {
+                    return result;
+                }
+            } catch (e) {
+                return "";
+            }
         }
 
     } // end of blocks code
