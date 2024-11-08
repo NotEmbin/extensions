@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.4.0';
+    const embin_json_version = 'v1.4.1';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -723,19 +723,6 @@
                                 type: Scratch.ArgumentType.STRING,
                                 defaultValue: 'string',
                                 menu: 'value_types'
-                            }
-                        }
-                    },
-                    {
-                        opcode: 'as_type_menu',
-                        blockType: Scratch.BlockType.REPORTER,
-                        text: '[types]',
-                        disableMonitor: true,
-                        arguments: {
-                            types: {
-                                type: Scratch.ArgumentType.STRING,
-                                defaultValue: 'object',
-                                menu: 'type_menu'
                             }
                         }
                     },
