@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.19.0';
+    const embin_utils_version = 'v1.19.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1577,6 +1577,32 @@
                 }
               }
             },
+            {
+              opcode: 'id_to_translation_key',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'id [string] to key',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'project:cool_stuff/thing'
+                }
+              }
+            },
+            {
+              opcode: 'id_to_prefixed_translation_key',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'id [string] to [prefix] key',
+              arguments: {
+                string: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'minecraft:planks/oak'
+                },
+                prefix: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'block'
+                }
+              }
+            },
 
             '---',
             make_label("Zip Utilities"),
@@ -2539,6 +2565,15 @@
           let splitted_path = String(args.path).split(".");
           splitted_path.splice(splitted_path.length - 1, 1);
           return splitted_path.join(".");
+        }
+
+        id_to_translation_key (args) {
+          let id = this.return_id_with_namespace(args);
+          return id.replace(":",".").replaceAll("/",".");
+        }
+
+        id_to_prefixed_translation_key (args) {
+          return String(args.prefix) + "." + this.id_to_translation_key(args);
         }
 
       } // end of blocks code
