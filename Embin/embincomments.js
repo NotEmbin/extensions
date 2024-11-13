@@ -6,9 +6,10 @@
 (function (Scratch) {
     'use strict';
 
-    const embin_comments_version = 'v1.2.1';
+    const embin_comments_version = 'v1.3.0';
     const branch_true = true;
     const default_comment = 'cool comment';
+    const for_removal_message = "It is advised you stop using it, or contact the developer of this project to tell them to stop using this script.";
   
     class EmbinComments {
         getInfo() {
@@ -219,6 +220,23 @@
                         text: '...',
                         disableMonitor: true
                     },
+
+                    {
+                        blockType: Scratch.BlockType.LABEL,
+                        text: 'Mark Scripts as Deprecated',
+                        hideFromPalette: false
+                    },
+
+                    {
+                        opcode: 'mark_deprecated',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: '!* deprecated *!'
+                    },
+                    {
+                        opcode: 'mark_deprecated_for_removal',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: '!* deprecated, to be removed *!'
+                    },
                     /*
                     {
                         opcode: 'comment_conditional',
@@ -303,6 +321,16 @@
 
         placeholder_hat () {
             // no-op
+        }
+
+        mark_deprecated (args, util) {
+            let sprite_name = util.target.sprite.name ?? "";
+            console.warn("Deprecated script in sprite \"" + sprite_name + "\" was used.");
+        }
+
+        mark_deprecated_for_removal (args, util) {
+            let sprite_name = util.target.sprite.name ?? "";
+            console.error("Deprecated script marked for removal in sprite \"" + sprite_name + "\" was used.\n" + for_removal_message);
         }
 
     } // end of blocks code
