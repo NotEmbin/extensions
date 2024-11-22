@@ -1,0 +1,31 @@
+{
+	"singular":"character",
+	"plural":"characters",
+	"params":{
+		"hp":{
+			"type":"integer",
+			"range":[0,32767]
+		},
+		"death_sound":{
+			"type":"string",
+			"required":false,
+			"default_value":"fwb:sound_effects/death"
+		},
+		"attacks":{
+			"type":"array",
+			"array_type":"registry_entry",
+			"registry":"attacks",
+			"length_range":[3,3]
+		},
+		"frames_of_animation":{
+			"type":"integer",
+			"range":[1,255],
+			"default_value":1,
+			"required":false
+		},
+		"texture_override":{
+			"type":"string",
+			"required":false
+		}
+	}
+}

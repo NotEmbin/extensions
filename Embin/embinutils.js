@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.19.1';
+    const embin_utils_version = 'v1.19.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -160,6 +160,7 @@
     var namespace = 'engine';
 
     function add_namespace_to_string(string) {
+      if (string == "") return namespace + ":" + fallback_costume_name;
       if (!(string.includes(":"))) {
         if (!path_regex.test(String(string))) throw new Error("Invalid path: \"" + string + "\"");
         return (namespace + ":" + string);
