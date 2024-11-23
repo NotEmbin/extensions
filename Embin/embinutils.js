@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.19.2';
+    const embin_utils_version = 'v1.20.0-pre1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -36,88 +36,38 @@
 
     let tags = Object.create(null);
     let tag_name_delimeter = "#";
-    const v_tag_types = [
+    let v_tag_types = [
       'characters',
       'enemies',
-      'attacks',
-      'tiles',
-      'entities',
-      'items',
-      'chips',
-      'bytes',
-      'areas',
-      'levels',
-      'buildables',
-      'menus',
-      'settings',
-      'controls',
-      'categories',
-      'level_backgrounds',
-      'maps',
-      'campaigns',
-      'effects',
-      'blocks',
-      'enchantments',
-      'biomes',
-      'liquids',
-      'stories',
-      'unlockables',
-      'expansions',
-      'secrets',
-      'paintings',
-      'tracks',
-      'upgrades',
-      'pieces',
-      'monsters',
-      'balls',
-      'towers',
-      'defenders',
-      'powerups',
-      'consumables',
-      'scripts',
-      'objects',
-      'triggers',
-      'keys',
-      'genders',
-      'cosmetics',
-      'seasons',
-      'capes',
-      'days',
-      'nights',
-      'planets',
-      'solar_systems',
-      'galaxies',
-      'universes',
-      'dimensions',
-      'moons',
-      'stars',
-      'elements',
-      'materials',
-      'functions',
-      'currencies',
-      'challenges',
-      'variables',
-      'cameras',
-      'extensions',
-      'sounds',
-      'sound_groups',
-      'dlcs',
-      'missions',
-      'objectives',
-      'animals',
-      'experiments',
-      'feature_flags',
-      'recipes',
-      'advancements',
-      'instruments',
-      'damage_types',
-      'loot_tables',
-      'jukebox_songs',
-      'structures',
-      'patterns',
-      'banner_patterns',
-      'trim_patterns'
+      'attacks'
     ];
+    let registry_entries = {
+      characters: [],
+      enemies: [],
+      attacks: []
+    };
+    let registries = {
+      characters: {
+        singular:"character",
+        plural:"characters"
+      },
+      enemies: {
+        singular:"enemy",
+        plural:"enemies"
+      },
+      attacks: {
+        singular:"attack",
+        plural:"attacks"
+      }
+    };
+
+    function check_for_param(param, registry) {
+      try {
+        if (!Object.keys(registries[registry].params).includes(param)) throw new ReferenceError('No param "' + param + '" in registry "' + registry + '"');
+      } catch {
+        throw new ReferenceError('No param "' + param + '" in registry "' + registry + '"')
+      }
+    }
 
     function reset_temp_vars() {
       temp_vars = Object.create(null);
@@ -170,6 +120,15 @@
       }
     }
 
+    function is_id_valid(id) {
+      try {
+        let test = add_namespace_to_string(id);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     function stringToEqivalint(value) {
       // is the value a valid json? if so convert to one else do nothing
       try {
@@ -191,6 +150,29 @@
       }
 
       return value;
+    }
+
+    function json_valid_return (json) {
+      if (typeof json != "string") {
+        return json;
+      } else {
+        try {
+          return JSON.parse(json);
+        } catch {
+          return json;
+        }
+      }
+    }
+
+    function fix_invalid_json_values (value) {
+      if (Number.isNaN(value)) return "NaN";
+      if (value === Infinity) return "Infinity";
+      if (value === -Infinity) return "-Infinity";
+      return value;
+    }
+
+    function parse_value_for_json(value) {
+      return fix_invalid_json_values(json_valid_return(value));
     }
 
     class EmbinUtils {
@@ -1369,6 +1351,195 @@
             },
             
             '---',
+            make_label("Registries"),
+
+            {
+              opcode: 'create_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create registry [name]',
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'blocks'
+                }
+              }
+            },
+            {
+              opcode: 'set_display_of_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set [display] ref of [registry] to [name]',
+              arguments: {
+                display: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'singular',
+                  menu: 'registry_name_type'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'character'
+                },
+              }
+            },
+            {
+              opcode: 'add_param_to_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'add param [name] of type [type] to [registry]',
+              arguments: {
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'integer',
+                  menu: 'value_types'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hp'
+                },
+              }
+            },
+            {
+              opcode: 'make_param_optional',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'make param [name] in [registry] optional',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hp'
+                }
+              }
+            },
+            {
+              opcode: 'set_default_value_of_param',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set default value of param [name] in [registry] to [value]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hp'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                }
+              }
+            },
+            {
+              opcode: 'set_number_param_range',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'number: set range for param [param] in [registry] to min: [min] max: [max]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                param: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'hp'
+                },
+                min: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '1'
+                },
+                max: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '255'
+                }
+              }
+            },
+            {
+              opcode: 'create_registry_from_json',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create registry [name] from json [json]',
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'blocks'
+                },
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{}'
+                }
+              }
+            },
+            {
+              opcode: 'shadow_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'registry',
+              hideFromPalette: true,
+              allowDropAnywhere: true
+            },
+            {
+              opcode: 'shadow_entry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'entry',
+              hideFromPalette: true,
+              allowDropAnywhere: true
+            },
+            {
+              opcode: 'validate_if_registry_entry_exists',
+              blockType: Scratch.BlockType.CONDITIONAL,
+              branchCount: -1,
+              text: 'validate if [registry] [entry] exists with [check]',
+              hideFromPalette: true,
+              arguments: {
+                registry: {},
+                entry: {},
+                check: {
+                  type: Scratch.ArgumentType.BOOLEAN
+                }
+              }
+            },
+            /*
+            {
+              blockType: Scratch.BlockType.XML,
+              xml: `
+                <block type="embinutils_validate_if_registry_entry_exists">
+                  <value name="registry"><shadow type="embinutils_shadow_registry"></shadow></value>
+                  <value name="entry"><shadow type="embinutils_shadow_entry"></shadow></value>
+                </block>
+              `
+            },
+            */
+            {
+              opcode: 'get_json_of_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get registry [registry] as json',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                }
+              }
+            },
+            {
+              opcode: 'return_all_tag_types',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current registries',
+              hideFromPalette: false
+            },
+
+            '---',
             make_label("Tags"),
 
             {
@@ -1500,12 +1671,6 @@
                   defaultValue: 'goobers'
                 }
               }
-            },
-            {
-              opcode: 'return_all_tag_types',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'all current tag types',
-              hideFromPalette: true
             },
 
             '---',
@@ -1686,7 +1851,7 @@
               },
               tag_types: {
                 acceptReporters: true,
-                items: v_tag_types
+                items: 'get_list_of_tag_types'
               },
               tag_types_singular: {
                 acceptReporters: true,
@@ -1733,6 +1898,31 @@
                 items: [
                   'namespace',
                   'id'
+                ]
+              },
+              loaded_tags: {
+                acceptReporters: true,
+                items: 'get_loaded_tags'
+              },
+              registry_name_type: {
+                acceptReporters: true,
+                items: [
+                  'singular',
+                  'plural'
+                ]
+              },
+              value_types: {
+                acceptReporters: true,
+                items: [
+                  'string',
+                  'number',
+                  'boolean',
+                  'object',
+                  'array',
+                  'integer',
+                  'float',
+                  'registry_entry',
+                  'tag'
                 ]
               }
             }
@@ -2277,20 +2467,22 @@
         }
 
         create_tag_type(args) {
-          v_tag_types.push(args.tag_type_name);
+          if (!v_tag_types.includes(args.tag_type_name)) {
+            v_tag_types.push(args.tag_type_name);
+          }
           Scratch.vm.extensionManager.refreshBlocks();
         }
 
         return_all_tag_types(args) {
-          return v_tag_types;
+          return JSON.stringify(v_tag_types);
         }
 
         return_list_of_vars(args) {
-          return Object.keys(temp_vars);
+          return JSON.stringify(Object.keys(temp_vars));
         }
 
         return_list_of_tags(args) {
-          return Object.keys(tags);
+          return JSON.stringify(Object.keys(tags));
         }
 
         convert_to_id_with_namespace(args) {
@@ -2575,6 +2767,102 @@
 
         id_to_prefixed_translation_key (args) {
           return String(args.prefix) + "." + this.id_to_translation_key(args);
+        }
+
+        get_list_of_tag_types() {
+          if (v_tag_types.length > 0) return v_tag_types;
+          return ['none'];
+        }
+
+        get_loaded_tags() {
+          let list = Object.keys(tags);
+          if (list.length > 0) {
+            return list.map((i) => ({
+              text: i.replace(tag_name_delimeter, " | "),
+              value: i,
+            }));
+          }
+          return [
+            {
+              text: 'no tags loaded',
+              value: 'no_tags_loaded'
+            }
+          ];
+        }
+
+        create_registry(args) {
+          this.create_tag_type({tag_type_name: args.name});
+          registry_entries[args.name] = [];
+          registries[args.name] = {};
+        }
+
+        type_of_value (value) {
+          let type = typeof value;
+          if (type === "number") {
+            if (Number.isInteger(value)) return "integer";
+            return "float";
+          }
+          if (Array.isArray(value)) return "array";
+          if (value === null) return "null";
+          return type;
+        }
+
+        is_type (type, value) {
+          let type2 = this.type_of_value(value);
+          if (typeof value === "number" && type === "number") return true;
+          if (type2 === type) return true;
+          return false;
+        }
+
+        set_display_of_registry(args) {
+          registries[args.registry][args.display] = args.name;
+        }
+
+        create_registry_from_json(args) {
+          this.create_tag_type({tag_type_name: args.name});
+          registry_entries[args.name] = [];
+          registries[args.name] = JSON.parse(args.json);
+        }
+
+        get_json_of_registry(args) {
+          return JSON.stringify(registries[args.registry]);
+        }
+
+        add_param_to_registry(args) {
+          let param_name = args.name;
+          let param_type = args.type;
+          if (!Object.keys(registries[args.registry]).includes("params")) registries[args.registry].params = {};
+          let param = {};
+          param.type = param_type;
+          registries[args.registry].params[param_name] = param;
+        }
+
+        make_param_optional(args) {
+          check_for_param(args.name, args.registry);
+          registries[args.registry].params[args.name].required = false;
+        }
+
+        set_default_value_of_param(args) {
+          check_for_param(args.name, args.registry);
+          registries[args.registry].params[args.name].default_value = parse_value_for_json(args.value);
+        }
+
+        validate_value(value, type) {
+          switch (type) {
+            case "tag":
+              if (Array.isArray(value)) return true;
+              if (!is_id_valid(value)) return false;
+              return true;
+            case "registry_entry":
+              return is_id_valid(value);
+            default:
+              return this.is_type(type, value);
+          }
+        }
+
+        set_number_param_range(args) {
+          check_for_param(args.param, args.registry);
+          registries[args.registry].params[args.param].range = [Number(args.min), Number(args.max)];
         }
 
       } // end of blocks code
