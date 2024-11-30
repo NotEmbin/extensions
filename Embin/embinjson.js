@@ -8,7 +8,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.4.1';
+    const embin_json_version = 'v1.4.2';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -1481,6 +1481,8 @@
                 }
                 if (typeof result == "object") {
                     return JSON.stringify(result);
+                } else if (typeof result == "undefined") {
+                    return "";
                 } else {
                     return result;
                 }
