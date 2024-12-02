@@ -2,9 +2,9 @@
 	"singular":"character",
 	"plural":"characters",
 	"params":{
-		"hp":{
+		"health":{
 			"type":"integer",
-			"range":[0,32767]
+			"range":[0,65535]
 		},
 		"death_sound":{
 			"type":"string",
