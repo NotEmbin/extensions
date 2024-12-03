@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-pre3';
+    const embin_utils_version = 'v1.20.0-pre4';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1006,6 +1006,20 @@
                 },
               }
             },
+            {
+              opcode: 'get_real_var',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [var]',
+              disableMonitor: true,
+              allowDropAnywhere: true,
+              arguments: {
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                }
+              }
+            },
+            '---',
             {
               opcode: 'green_flag',
               blockType: Scratch.BlockType.COMMAND,
@@ -3410,6 +3424,11 @@
           if (cloneVariable) {
             cloneVariable.value = String(args.data);
           }
+        }
+
+        get_real_var(args, util) {
+          const v = util.target.lookupVariableByNameAndType(Cast.toString(args.var), "");
+          return v ? v.value : "";
         }
 
       } // end of blocks code
