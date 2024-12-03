@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-pre2';
+    const embin_utils_version = 'v1.20.0-pre3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -988,6 +988,25 @@
             '---',
 
             {
+              opcode: 'create_clone_of_sprite_with_data',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create clone of [sprite] with [var] set to [data]',
+              arguments: {
+                sprite: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: 'sprites'
+                },
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                data: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                },
+              }
+            },
+            {
               opcode: 'green_flag',
               blockType: Scratch.BlockType.COMMAND,
               text: 'run green flag'
@@ -1611,6 +1630,11 @@
               text: 'all current registries',
               hideFromPalette: false
             },
+            {
+              opcode: 'delete_registries',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete all registries'
+            },
             '---',
             {
               opcode: 'set_number_param_range',
@@ -2177,6 +2201,10 @@
               registry_entries_list: {
                 acceptReporters: true,
                 items: 'get_registry_entries'
+              },
+              sprites: {
+                acceptReporters: true,
+                items: 'getTargets'
               },
             }
           };
@@ -3032,7 +3060,7 @@
 
         get_list_of_tag_types() {
           if (v_tag_types.length > 0) return v_tag_types;
-          return ['none'];
+          return ['no_registries_available'];
         }
 
         get_loaded_tags() {
@@ -3168,46 +3196,29 @@
                       case "integer":
                       case "float":
                       case "number":
-                        if (param_data.hasOwnProperty("range")) {
-                          if (Array.isArray(param_data.range)) {
-                            let range = param_data.range;
-                            if (range.length == 2) {
-                              if (!((value < range[0]) && (value > range[1]))) {
-                                add_validation_error(registry, entry, 'Parameter "' + param_key + '" is not in allowed value range');
-                                break;
-                              }
-                            } else {
-                              add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" has ' + range.length + ' values instead of 2');
-                              break;
-                            }
-                          } else {
-                            add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" is not an array');
-                            break;
-                          }
-                        }
+                        this.validation_for_numbers(registry, entry, value, param_key, param_data);
+                        break;
                       case "registry_entry":
-                        if (param_data.hasOwnProperty("registry")) {
-                          let defined_registry_type = param_data.registry;
-                          if (typeof defined_registry_type === "string") {
-                            if (!registry_entries.hasOwnProperty(defined_registry_type + value)) {
-                              add_validation_error(registry, entry, 'The registry entry defined in "' + param_key + '" does not exist');
-                              break;
-                            }
-                          } else {
-                            add_validation_error(registry, entry, 'The registry defined for "' + param_key + '" is not a string');
-                            break;
-                          }
-                        } else {
-                          add_validation_error(registry, entry, 'No registry defined for "' + param_key + '"');
+                        this.validation_for_registry_entry(registry, entry, value, param_key, param_data);
+                        break;
+                      case "id":
+                        if (!is_id_valid(value)) {
+                          add_validation_error(registry, entry, 'Id in "' + param_key + '" is invalid');
                           break;
                         }
+                        registry_entries[entry][param_key] = add_namespace_to_string(value);
+                        break;
+                      case "array":
+                        this.validation_for_array(registry, entry, value, param_key, param_data);
+                        break;
                     }
                   } else {
                     add_validation_error(registry, entry, 'Wrong type for parameter "' + param_key + '"');
                     break;
                   }
                 } else { // no key \/
-                  let required = param_data.required || true;
+                  let required = true;
+                  if (param_data.hasOwnProperty("required")) required = param_data.required;
                   if (required) {
                     add_validation_error(registry, entry, 'Missing parameter "' + param_key + '"');
                     break;
@@ -3221,6 +3232,88 @@
                     }
                   }
                 } // no key /\
+              }
+            }
+          }
+        }
+
+        validation_for_numbers(registry, entry, value, param_key, param_data) {
+          if (param_data.hasOwnProperty("range")) {
+            if (Array.isArray(param_data.range)) {
+              let range = param_data.range;
+              if (range.length == 2) {
+                if (!((value >= range[0]) && (value <= range[1]))) {
+                  add_validation_error(registry, entry, 'Parameter "' + param_key + '" is not in allowed value range');
+                }
+              } else {
+                add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" has ' + range.length + ' values instead of 2');
+              }
+            } else {
+              add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" is not an array');
+            }
+          }
+        }
+
+        validation_for_registry_entry(registry, entry, value, param_key, param_data) {
+          if (param_data.hasOwnProperty("registry")) {
+            let defined_registry_type = param_data.registry;
+            if (typeof defined_registry_type === "string") {
+              if (!registry_entries.hasOwnProperty(defined_registry_type + registry_entry_delimeter + value)) {
+                add_validation_error(registry, entry, 'The registry entry defined in "' + param_key + '" does not exist');
+              }
+            } else {
+              add_validation_error(registry, entry, 'The registry defined for "' + param_key + '" is not a string');
+            }
+          } else {
+            add_validation_error(registry, entry, 'No registry defined for "' + param_key + '"');
+          }
+        }
+
+        validation_for_array(registry, entry, value, param_key, param_data) {
+          if (!Array.isArray(value)) {
+            add_validation_error(registry, entry, 'Parameter "' + param_key + '" is not an array');
+            return;
+          }
+          if (param_data.hasOwnProperty("length_range")) {
+            let range = param_data.length_range;
+            if (!Array.isArray(range)) {
+              add_validation_error(registry, entry, 'Range given for "' + param_key + '" is not an array');
+              return;
+            }
+            if (range.length != 2) {
+              add_validation_error(registry, entry, 'Range given for "' + param_key + '" has ' + range.length + ' values instead of 2');
+              return;
+            }
+            if (!((value.length >= range[0]) && (value.length <= range[1]))) {
+              add_validation_error(registry, entry, 'Length of array for "' + param_key + '" is not within defined acceptable range');
+              return;
+            }
+          }
+          if (param_data.hasOwnProperty("array_type")) {
+            if (param_data.array_type == "array") {
+              add_validation_error(registry, entry, 'Array type of "' + param_key + '" cannot be an array');
+              return;
+            }
+            for (let i in value) {
+              let thing = value[i];
+              if (this.validate_value(thing, param_data.array_type)) {
+                switch (param_data.array_type) {
+                  case "integer":
+                  case "float":
+                  case "number":
+                    this.validation_for_numbers(registry, entry, thing, param_key, param_data);
+                  case "registry_entry":
+                    this.validation_for_registry_entry(registry, entry, thing, param_key, param_data);
+                  case "id":
+                    if (!is_id_valid(thing)) {
+                      add_validation_error(registry, entry, 'Id in "' + param_key + '" is invalid');
+                      break;
+                    }
+                    registry_entries[entry][param_key][i] = add_namespace_to_string(thing);
+                }
+              } else {
+                add_validation_error(registry, entry, 'Item ' + (i + 1) + ' of "' + param_key + '" is the wrong type!');
+                break;
               }
             }
           }
@@ -3282,6 +3375,42 @@
         shadow_registry() {}
         shadow_entry() {}
         validate_if_registry_entry_exists() {}
+
+        delete_registries(args) {
+          registries = {}
+        }
+
+        // taken from skins ext
+        getTargets() {
+          const items = [];
+          const targets = vm.runtime.targets;
+          for (let index = 1; index < targets.length; index++) {
+            const target = targets[index];
+            if (target.isOriginal) {
+              items.push({
+                text: target.getName(),
+                value: target.getName()
+              });
+            }
+          }
+          return items.length > 0 ? items : [""];
+        }
+
+        // taken from clones+ ext
+        create_clone_of_sprite_with_data(args, util) {
+          const target = vm.runtime.getSpriteTargetByName(String(args.sprite));
+          const sprite = target.sprite;
+          vm.runtime.ext_scratch3_control._createClone(
+            sprite.name,
+            target
+          );
+          const clones = sprite.clones;
+          const cloneNum = clones.length - 1;
+          const cloneVariable = clones[cloneNum].lookupVariableByNameAndType(args.var, "", clones[cloneNum]);
+          if (cloneVariable) {
+            cloneVariable.value = String(args.data);
+          }
+        }
 
       } // end of blocks code
   
