@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-pre4';
+    const embin_utils_version = 'v1.20.0-pre5';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1006,6 +1006,34 @@
                 },
               }
             },
+
+            {
+              opcode: 'create_clone_of_sprite_with_data_two',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create clone of [sprite] with [var] set to [data] and [var2] set to [data2]',
+              arguments: {
+                sprite: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: 'sprites'
+                },
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                data: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                },
+                var2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my other variable'
+                },
+                data2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '2'
+                },
+              }
+            },
             {
               opcode: 'get_real_var',
               blockType: Scratch.BlockType.REPORTER,
@@ -1016,6 +1044,21 @@
                 var: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'my variable'
+                }
+              }
+            },
+            {
+              opcode: 'set_real_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set [var] to [value]',
+              arguments: {
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
                 }
               }
             },
@@ -3429,6 +3472,32 @@
         get_real_var(args, util) {
           const v = util.target.lookupVariableByNameAndType(Cast.toString(args.var), "");
           return v ? v.value : "";
+        }
+
+        create_clone_of_sprite_with_data_two(args, util) {
+          const target = vm.runtime.getSpriteTargetByName(String(args.sprite));
+          const sprite = target.sprite;
+          vm.runtime.ext_scratch3_control._createClone(
+            sprite.name,
+            target
+          );
+          const clones = sprite.clones;
+          const cloneNum = clones.length - 1;
+          const cloneVariable = clones[cloneNum].lookupVariableByNameAndType(args.var, "", clones[cloneNum]);
+          if (cloneVariable) {
+            cloneVariable.value = String(args.data);
+          }
+          const cloneVariable2 = clones[cloneNum].lookupVariableByNameAndType(args.var2, "", clones[cloneNum]);
+          if (cloneVariable2) {
+            cloneVariable2.value = String(args.data2);
+          }
+        }
+
+        set_real_var(args, util) {
+          const v = util.target.lookupVariableByNameAndType(Cast.toString(args.var), "");
+          if (v) {
+            v.value = args.value;
+          }
         }
 
       } // end of blocks code
