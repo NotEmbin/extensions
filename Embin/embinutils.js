@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-pre5';
+    const embin_utils_version = 'v1.20.0-pre6';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -490,6 +490,26 @@
                 localeargs: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: '"maximumSignificantDigits":7'
+                }
+              }
+            },
+
+            '---',
+
+            {
+              opcode: 'current_timestamp',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get current timestamp',
+              disableMonitor: false
+            },
+            {
+              opcode: 'date_from_timestamp',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'timestamp [timestamp] to date',
+              arguments: {
+                timestamp: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '9000'
                 }
               }
             },
@@ -3498,6 +3518,24 @@
           if (v) {
             v.value = args.value;
           }
+        }
+
+        current_timestamp(args) {
+          return Date.now();
+        }
+
+        date_from_timestamp(args) {
+          let date = new Date(Cast.toNumber(args.timestamp));
+          return date.toLocaleString(String(this.get_user_language()), {
+            year:"numeric",
+            month:"long",
+            day:"numeric",
+            hour12:true,
+            hour:"2-digit",
+            minute:"2-digit",
+            second:"2-digit",
+            timeZoneName:"short"
+          });
         }
 
       } // end of blocks code
