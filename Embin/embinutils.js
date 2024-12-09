@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-pre6';
+    const embin_utils_version = 'v1.20.0-rc1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -116,7 +116,7 @@
       if (a == 'no') return 'No';
       if (a == 'stop project') {utility.stopAll();}
       if (a == 'stop script') {utility.stopThisScript();}
-      return "";
+      return a;
     }
 
     //const argbuffer = '#';
@@ -509,7 +509,7 @@
               arguments: {
                 timestamp: {
                   type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: '9000'
+                  defaultValue: '1572475998000'
                 }
               }
             },
@@ -1285,36 +1285,6 @@
                   num: {
                     type: Scratch.ArgumentType.NUMBER,
                     defaultValue: '2147483647'
-                }
-              }
-            },
-
-            '---',
-
-            {
-              opcode: 'js_stack',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'js: [script]',
-              disableMonitor: true,
-              hideFromPalette: true,
-              arguments: {
-                script: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'alert(\'Hey\');'
-                }
-              }
-            },
-            {
-              opcode: 'js_reporter',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'js: [script]',
-              disableMonitor: true,
-              allowDropAnywhere: true,
-              hideFromPalette: true,
-              arguments: {
-                script: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'Math.random();'
                 }
               }
             },
@@ -2619,14 +2589,6 @@
 
         window_focused (args) {
           return document.hasFocus();
-        }
-
-        js_stack (args) {
-          throw new Error("This block is no longer supported");
-        }
-
-        js_reporter (args) {
-          throw new Error("This block is no longer supported");
         }
 
         not_equals(args) {
