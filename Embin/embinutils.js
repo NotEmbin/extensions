@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-rc1';
+    const embin_utils_version = 'v1.20.0-rc2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -868,6 +868,12 @@
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
               text: 'js: Number.MIN_VALUE'
+            },
+            {
+              opcode: 'return_device_memory',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: navigator.deviceMemory'
             },
             {
               opcode: 'if_else_green_flag_reporter',
@@ -3498,6 +3504,10 @@
             second:"2-digit",
             timeZoneName:"short"
           });
+        }
+
+        return_device_memory() {
+          return navigator.deviceMemory;
         }
 
       } // end of blocks code
