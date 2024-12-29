@@ -6,9 +6,13 @@
 (function (Scratch) {
     'use strict';
 
+    if (!Scratch.extensions.unsandboxed) {
+        throw new Error('"Embin\'s JSON" must run unsandboxed');
+    }
+
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.4.2';
+    const embin_json_version = 'v1.4.3';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -500,6 +504,26 @@
                         opcode: 'json_array_set',
                         blockType: Scratch.BlockType.REPORTER,
                         text: 'replace item [pos] of [json] with [item]',
+                        disableMonitor: true,
+                        arguments: {
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: default_array
+                            },
+                            item: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'sigma'
+                            },
+                            pos: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: '2'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'json_array_set_string',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'replace item [pos] of [json] with string [item]',
                         disableMonitor: true,
                         arguments: {
                             json: {
@@ -1318,7 +1342,7 @@
                     if (Array.isArray(array)) {
                         const safeArray = array.map((i) => {
                             if (typeof i === "object") return JSON.stringify(i);
-                            return i;
+                            return Cast.toString(i);
                         });
                         listVariable.value = safeArray;
                     }
@@ -1488,6 +1512,16 @@
                 }
             } catch (e) {
                 return "";
+            }
+        }
+
+        json_array_set_string({ item, pos, json }) {
+            try {
+                json = JSON.parse(json);
+                json[pos - 1] = Cast.toString(item);
+                return JSON.stringify(json);
+            } catch {
+                return "[]";
             }
         }
 
