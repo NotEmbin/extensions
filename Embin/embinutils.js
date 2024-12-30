@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-rc2';
+    const embin_utils_version = 'v1.20.0-rc3';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1032,7 +1032,6 @@
                 },
               }
             },
-
             {
               opcode: 'create_clone_of_sprite_with_data_two',
               blockType: Scratch.BlockType.COMMAND,
@@ -1086,6 +1085,21 @@
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: '1'
                 }
+              }
+            },
+            {
+              opcode: 'position_self',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'visually position self at x: [x] y: [y]',
+              arguments: {
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '0'
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '0'
+                },
               }
             },
             '---',
@@ -3508,6 +3522,15 @@
 
         return_device_memory() {
           return navigator.deviceMemory;
+        }
+
+        position_self(args, util) {
+          let x = Cast.toNumber(args.x);
+          let y = Cast.toNumber(args.y);
+          const id = util.target.drawableID;
+          if (vm.renderer._drawList.indexOf(id) !== -1) {
+            vm.renderer._allDrawables[id].updatePosition([x, y]);
+          }
         }
 
       } // end of blocks code
