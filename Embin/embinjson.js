@@ -12,7 +12,7 @@
 
     const Cast = Scratch.Cast;
 
-    const embin_json_version = 'v1.4.3';
+    const embin_json_version = 'v1.4.4';
     const default_json = '{"key":"value"}';
     const default_key = 'key';
     const default_value = 'new value';
@@ -387,6 +387,14 @@
                         allowDropAnywhere: true,
                         disableMonitor: true,
                         arguments: default_args_object_no_value
+                    },
+                    {
+                        opcode: 'get_json_else_value',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'get [key] in [json] else return [value]',
+                        allowDropAnywhere: true,
+                        disableMonitor: true,
+                        arguments: default_args_object
                     },
                     {
                         opcode: 'get_json_path',
@@ -1522,6 +1530,19 @@
                 return JSON.stringify(json);
             } catch {
                 return "[]";
+            }
+        }
+
+        get_json_else_value({ json, key, value }) {
+            try {
+                json = JSON.parse(json);
+                if (json.hasOwnProperty(key)) {
+                    if (typeof json[key] === "object") return JSON.stringify(json[key]);
+                    return json[key];
+                }
+                return Cast.toString(value);
+            } catch {
+                return Cast.toString(value);
             }
         }
 
