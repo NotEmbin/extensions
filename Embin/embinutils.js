@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0-rc3';
+    const embin_utils_version = 'v1.20.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1550,6 +1550,23 @@
                 name: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'character'
+                },
+              }
+            },
+            {
+              opcode: 'get_display_of_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [display] ref of [registry]',
+              arguments: {
+                display: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'singular',
+                  menu: 'registry_name_type'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
                 },
               }
             },
@@ -3436,7 +3453,8 @@
         validate_if_registry_entry_exists() {}
 
         delete_registries(args) {
-          registries = {}
+          registries = {};
+          v_tag_types = [];
         }
 
         // taken from skins ext
@@ -3530,6 +3548,16 @@
           const id = util.target.drawableID;
           if (vm.renderer._drawList.indexOf(id) !== -1) {
             vm.renderer._allDrawables[id].updatePosition([x, y]);
+          }
+        }
+
+        get_display_of_registry(args) {
+          try {
+            let ref = Cast.toString(registries[Cast.toString(args.registry)][Cast.toString(args.display)]);
+            if (ref == "undefined") return Cast.toString(args.registry);
+            return ref;
+          } catch {
+            return Cast.toString(args.registry);
           }
         }
 
