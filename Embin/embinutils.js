@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.19.2';
+    const embin_utils_version = 'v1.20.0';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -35,89 +35,54 @@
     let temp_vars = Object.create(null);
 
     let tags = Object.create(null);
-    let tag_name_delimeter = "#";
-    const v_tag_types = [
+    const tag_name_delimeter = "#";
+    const registry_entry_delimeter = "@";
+    let registry_validation_errors = {};
+    let v_tag_types = [
       'characters',
       'enemies',
-      'attacks',
-      'tiles',
-      'entities',
-      'items',
-      'chips',
-      'bytes',
-      'areas',
-      'levels',
-      'buildables',
-      'menus',
-      'settings',
-      'controls',
-      'categories',
-      'level_backgrounds',
-      'maps',
-      'campaigns',
-      'effects',
-      'blocks',
-      'enchantments',
-      'biomes',
-      'liquids',
-      'stories',
-      'unlockables',
-      'expansions',
-      'secrets',
-      'paintings',
-      'tracks',
-      'upgrades',
-      'pieces',
-      'monsters',
-      'balls',
-      'towers',
-      'defenders',
-      'powerups',
-      'consumables',
-      'scripts',
-      'objects',
-      'triggers',
-      'keys',
-      'genders',
-      'cosmetics',
-      'seasons',
-      'capes',
-      'days',
-      'nights',
-      'planets',
-      'solar_systems',
-      'galaxies',
-      'universes',
-      'dimensions',
-      'moons',
-      'stars',
-      'elements',
-      'materials',
-      'functions',
-      'currencies',
-      'challenges',
-      'variables',
-      'cameras',
-      'extensions',
-      'sounds',
-      'sound_groups',
-      'dlcs',
-      'missions',
-      'objectives',
-      'animals',
-      'experiments',
-      'feature_flags',
-      'recipes',
-      'advancements',
-      'instruments',
-      'damage_types',
-      'loot_tables',
-      'jukebox_songs',
-      'structures',
-      'patterns',
-      'banner_patterns',
-      'trim_patterns'
+      'attacks'
     ];
+    let registry_entries = {};
+    let registries = {
+      characters: {
+        singular:"character",
+        plural:"characters",
+        allow_custom_parameters:false,
+        params:{}
+      },
+      enemies: {
+        singular:"enemy",
+        plural:"enemies",
+        allow_custom_parameters:false,
+        params:{}
+      },
+      attacks: {
+        singular:"attack",
+        plural:"attacks",
+        allow_custom_parameters:true,
+        params:{}
+      }
+    };
+
+    function check_for_param(param, registry) {
+      try {
+        if (!Object.keys(registries[registry].params).includes(param)) throw new ReferenceError('No param "' + param + '" in registry "' + registry + '"');
+      } catch {
+        throw new ReferenceError('No param "' + param + '" in registry "' + registry + '"')
+      }
+    }
+
+    function add_validation_error(registry, id, error) {
+      let id2 = id.replace(registry + registry_entry_delimeter, "");
+      if (!registry_validation_errors.hasOwnProperty(registry)) {
+        registry_validation_errors[registry] = {};
+      }
+      if (!registry_validation_errors[registry].hasOwnProperty(id2)) {
+        registry_validation_errors[registry][id2] = [];
+      }
+      registry_validation_errors[registry][id2].push(error);
+    }
 
     function reset_temp_vars() {
       temp_vars = Object.create(null);
@@ -128,6 +93,7 @@
     }
 
     // minified js sha256 hashing algorithm by geraintluff
+    // https://github.com/geraintluff/sha256
     var sha256=function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=Math.pow,g=f(2,32),h="length",i="",j=[],k=8*b[h],l=a.h=a.h||[],m=a.k=a.k||[],n=m[h],o={},p=2;64>n;p++)if(!o[p]){for(d=0;313>d;d+=p)o[d]=p;l[n]=f(p,.5)*g|0,m[n++]=f(p,1/3)*g|0}for(b+="\x80";b[h]%64-56;)b+="\x00";for(d=0;d<b[h];d++){if(e=b.charCodeAt(d),e>>8)return;j[d>>2]|=e<<(3-d)%4*8}for(j[j[h]]=k/g|0,j[j[h]]=k,e=0;e<j[h];){var q=j.slice(e,e+=16),r=l;for(l=l.slice(0,8),d=0;64>d;d++){var s=q[d-15],t=q[d-2],u=l[0],v=l[4],w=l[7]+(c(v,6)^c(v,11)^c(v,25))+(v&l[5]^~v&l[6])+m[d]+(q[d]=16>d?q[d]:q[d-16]+(c(s,7)^c(s,18)^s>>>3)+q[d-7]+(c(t,17)^c(t,19)^t>>>10)|0),x=(c(u,2)^c(u,13)^c(u,22))+(u&l[1]^u&l[2]^l[1]&l[2]);l=[w+x|0].concat(l),l[4]=l[4]+w|0}for(d=0;8>d;d++)l[d]=l[d]+r[d]|0}for(d=0;8>d;d++)for(e=3;e+1;e--){var y=l[d]>>8*e&255;i+=(16>y?0:"")+y.toString(16)}return i};
 
     function action_reporter(a, utility) {
@@ -150,7 +116,7 @@
       if (a == 'no') return 'No';
       if (a == 'stop project') {utility.stopAll();}
       if (a == 'stop script') {utility.stopThisScript();}
-      return "";
+      return a;
     }
 
     //const argbuffer = '#';
@@ -167,6 +133,15 @@
       } else {
         if (!id_regex.test(String(string))) throw new Error("Invalid ID: \"" + string + "\"");
         return string;
+      }
+    }
+
+    function is_id_valid(id) {
+      try {
+        let test = add_namespace_to_string(id);
+        return true;
+      } catch {
+        return false;
       }
     }
 
@@ -191,6 +166,29 @@
       }
 
       return value;
+    }
+
+    function json_valid_return (json) {
+      if (typeof json != "string") {
+        return json;
+      } else {
+        try {
+          return JSON.parse(json);
+        } catch {
+          return json;
+        }
+      }
+    }
+
+    function fix_invalid_json_values (value) {
+      if (Number.isNaN(value)) return "NaN";
+      if (value === Infinity) return "Infinity";
+      if (value === -Infinity) return "-Infinity";
+      return value;
+    }
+
+    function parse_value_for_json(value) {
+      return fix_invalid_json_values(json_valid_return(value));
     }
 
     class EmbinUtils {
@@ -499,6 +497,26 @@
             '---',
 
             {
+              opcode: 'current_timestamp',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get current timestamp',
+              disableMonitor: false
+            },
+            {
+              opcode: 'date_from_timestamp',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'timestamp [timestamp] to date',
+              arguments: {
+                timestamp: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '1572475998000'
+                }
+              }
+            },
+
+            '---',
+
+            {
               opcode: 'string_split',
               blockType: Scratch.BlockType.REPORTER,
               text: 'item [numof] of [string] split by: [deli]',
@@ -633,7 +651,7 @@
             {
               opcode: 'join_four',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'join [thing_1] [thing_2] [thing_3] [thing_4]',
+              text: '4 [thing_1] [thing_2] [thing_3] [thing_4]',
               arguments: {
                 thing_1: {
                   type: Scratch.ArgumentType.STRING,
@@ -656,7 +674,7 @@
             {
               opcode: 'join_five',
               blockType: Scratch.BlockType.REPORTER,
-              text: 'join [thing_1] [thing_2] [thing_3] [thing_4] [thing_5]',
+              text: '5 [thing_1] [thing_2] [thing_3] [thing_4] [thing_5]',
               arguments: {
                 thing_1: {
                   type: Scratch.ArgumentType.STRING,
@@ -677,6 +695,72 @@
                 thing_5: {
                   type: Scratch.ArgumentType.STRING,
                   defaultValue: 'e'
+                }
+              }
+            },
+            {
+              opcode: 'join_six',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '6 [thing_1] [thing_2] [thing_3] [thing_4] [thing_5] [thing_6]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                },
+                thing_3: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'c'
+                },
+                thing_4: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'd'
+                },
+                thing_5: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'e'
+                },
+                thing_6: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'f'
+                }
+              }
+            },
+            {
+              opcode: 'join_seven',
+              blockType: Scratch.BlockType.REPORTER,
+              text: '7 [thing_1] [thing_2] [thing_3] [thing_4] [thing_5] [thing_6] [thing_7]',
+              arguments: {
+                thing_1: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'a'
+                },
+                thing_2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'b'
+                },
+                thing_3: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'c'
+                },
+                thing_4: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'd'
+                },
+                thing_5: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'e'
+                },
+                thing_6: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'f'
+                },
+                thing_7: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'g'
                 }
               }
             },
@@ -784,6 +868,12 @@
               blockType: Scratch.BlockType.REPORTER,
               disableMonitor: true,
               text: 'js: Number.MIN_VALUE'
+            },
+            {
+              opcode: 'return_device_memory',
+              blockType: Scratch.BlockType.REPORTER,
+              disableMonitor: true,
+              text: 'js: navigator.deviceMemory'
             },
             {
               opcode: 'if_else_green_flag_reporter',
@@ -923,6 +1013,96 @@
 
             '---',
 
+            {
+              opcode: 'create_clone_of_sprite_with_data',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create clone of [sprite] with [var] set to [data]',
+              arguments: {
+                sprite: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: 'sprites'
+                },
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                data: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                },
+              }
+            },
+            {
+              opcode: 'create_clone_of_sprite_with_data_two',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create clone of [sprite] with [var] set to [data] and [var2] set to [data2]',
+              arguments: {
+                sprite: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: 'sprites'
+                },
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                data: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                },
+                var2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my other variable'
+                },
+                data2: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '2'
+                },
+              }
+            },
+            {
+              opcode: 'get_real_var',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [var]',
+              disableMonitor: true,
+              allowDropAnywhere: true,
+              arguments: {
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                }
+              }
+            },
+            {
+              opcode: 'set_real_var',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set [var] to [value]',
+              arguments: {
+                var: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'my variable'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                }
+              }
+            },
+            {
+              opcode: 'position_self',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'visually position self at x: [x] y: [y]',
+              arguments: {
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '0'
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '0'
+                },
+              }
+            },
+            '---',
             {
               opcode: 'green_flag',
               blockType: Scratch.BlockType.COMMAND,
@@ -1125,36 +1305,6 @@
                   num: {
                     type: Scratch.ArgumentType.NUMBER,
                     defaultValue: '2147483647'
-                }
-              }
-            },
-
-            '---',
-
-            {
-              opcode: 'js_stack',
-              blockType: Scratch.BlockType.COMMAND,
-              text: 'js: [script]',
-              disableMonitor: true,
-              hideFromPalette: true,
-              arguments: {
-                script: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'alert(\'Hey\');'
-                }
-              }
-            },
-            {
-              opcode: 'js_reporter',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'js: [script]',
-              disableMonitor: true,
-              allowDropAnywhere: true,
-              hideFromPalette: true,
-              arguments: {
-                script: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'Math.random();'
                 }
               }
             },
@@ -1369,6 +1519,379 @@
             },
             
             '---',
+            make_label("Registries"),
+
+            {
+              opcode: 'create_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create registry [name]',
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'blocks'
+                }
+              }
+            },
+            {
+              opcode: 'set_display_of_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set [display] ref of [registry] to [name]',
+              arguments: {
+                display: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'singular',
+                  menu: 'registry_name_type'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'character'
+                },
+              }
+            },
+            {
+              opcode: 'get_display_of_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [display] ref of [registry]',
+              arguments: {
+                display: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'singular',
+                  menu: 'registry_name_type'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+              }
+            },
+            {
+              opcode: 'add_param_to_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'add param [name] of type [type] to [registry]',
+              arguments: {
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'integer',
+                  menu: 'value_types'
+                },
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'health'
+                },
+              }
+            },
+            {
+              opcode: 'make_param_optional',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'make param [name] in [registry] optional',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'health'
+                }
+              }
+            },
+            {
+              opcode: 'set_default_value_of_param',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set default value of param [name] in [registry] to [value]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'health'
+                },
+                value: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '1'
+                }
+              }
+            },
+            {
+              opcode: 'create_registry_from_json',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create registry [name] from json [json]',
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'blocks'
+                },
+                json: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{}'
+                }
+              }
+            },
+            {
+              opcode: 'allow_custom_params_in_registry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'set "allow_custom_parameters" in [registry] to [bool]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                bool: {
+                  type: Scratch.ArgumentType.BOOLEAN
+                }
+              }
+            },
+            {
+              opcode: 'shadow_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'registry',
+              hideFromPalette: true,
+              allowDropAnywhere: true
+            },
+            {
+              opcode: 'shadow_entry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'entry',
+              hideFromPalette: true,
+              allowDropAnywhere: true
+            },
+            {
+              opcode: 'validate_if_registry_entry_exists',
+              blockType: Scratch.BlockType.CONDITIONAL,
+              branchCount: -1,
+              text: 'validate if [registry] [entry] exists with [check]',
+              hideFromPalette: true,
+              arguments: {
+                registry: {},
+                entry: {},
+                check: {
+                  type: Scratch.ArgumentType.BOOLEAN
+                }
+              }
+            },
+            /*
+            {
+              blockType: Scratch.BlockType.XML,
+              xml: `
+                <block type="embinutils_validate_if_registry_entry_exists">
+                  <value name="registry"><shadow type="embinutils_shadow_registry"></shadow></value>
+                  <value name="entry"><shadow type="embinutils_shadow_entry"></shadow></value>
+                </block>
+              `
+            },
+            */
+            {
+              opcode: 'get_json_of_registry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get registry [registry] as json',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                }
+              }
+            },
+            {
+              opcode: 'return_all_tag_types',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'all current registries',
+              hideFromPalette: false
+            },
+            {
+              opcode: 'delete_registries',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'delete all registries'
+            },
+            '---',
+            {
+              opcode: 'set_number_param_range',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'number: set range for param [param] in [registry] to min: [min] max: [max]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                param: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'health'
+                },
+                min: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '1'
+                },
+                max: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '255'
+                }
+              }
+            },
+            {
+              opcode: 'set_array_param_range',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'array: set length range for param [param] in [registry] to min: [min] max: [max]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                param: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'attacks'
+                },
+                min: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '1'
+                },
+                max: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '3'
+                }
+              }
+            },
+            {
+              opcode: 'set_array_value_type',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'array: set value type for param [param] in [registry] to [type]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                param: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'attacks'
+                },
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'integer',
+                  menu: 'value_types'
+                }
+              }
+            },
+            {
+              opcode: 'set_registry_entry_type',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'registry_entry: set registry type for param [param] in [registry] to [type]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                param: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'attacks'
+                },
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'attacks',
+                  menu: 'tag_types'
+                }
+              }
+            },
+
+            '---',
+            make_label("Registry Entries"),
+            {
+              opcode: 'validate_registry_entries',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'validate [registry] registry entries',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                }
+              }
+            },
+            {
+              opcode: 'get_validation_errors',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get validation errors',
+              hideFromPalette: false
+            },
+            {
+              opcode: 'clear_validation_errors',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'clear validation errors'
+            },
+            '---',
+            {
+              opcode: 'create_registry_entry',
+              blockType: Scratch.BlockType.COMMAND,
+              text: 'create [registry] entry with id [id] and data [data]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:freddy'
+                },
+                data: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: '{}'
+                },
+              }
+            },
+            {
+              opcode: 'get_registry_entry',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [registry]/[id]',
+              arguments: {
+                registry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters',
+                  menu: 'tag_types'
+                },
+                id: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'fwb:freddy'
+                },
+              }
+            },
+            {
+              opcode: 'get_registry_entry_from_list',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get [registry_entry]',
+              arguments: {
+                registry_entry: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: 'characters@fwb:freddy',
+                  menu: 'registry_entries_list'
+                },
+              }
+            },
+            {
+              opcode: 'get_all_registry_entries',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'get all registry entries'
+            },
+
+            '---',
             make_label("Tags"),
 
             {
@@ -1500,12 +2023,6 @@
                   defaultValue: 'goobers'
                 }
               }
-            },
-            {
-              opcode: 'return_all_tag_types',
-              blockType: Scratch.BlockType.REPORTER,
-              text: 'all current tag types',
-              hideFromPalette: true
             },
 
             '---',
@@ -1686,7 +2203,7 @@
               },
               tag_types: {
                 acceptReporters: true,
-                items: v_tag_types
+                items: 'get_list_of_tag_types'
               },
               tag_types_singular: {
                 acceptReporters: true,
@@ -1734,7 +2251,45 @@
                   'namespace',
                   'id'
                 ]
-              }
+              },
+              loaded_tags: {
+                acceptReporters: true,
+                items: 'get_loaded_tags'
+              },
+              registry_name_type: {
+                acceptReporters: true,
+                items: [
+                  'singular',
+                  'plural'
+                ]
+              },
+              value_types: {
+                acceptReporters: true,
+                items: [
+                  'string',
+                  'number',
+                  'boolean',
+                  'object',
+                  'array',
+                  'integer',
+                  'float',
+                  'registry_entry',
+                  'tag',
+                  'id'
+                ]
+              },
+              tuneshark_sounds: {
+                acceptReporters: true,
+                items: 'get_sound_list'
+              },
+              registry_entries_list: {
+                acceptReporters: true,
+                items: 'get_registry_entries'
+              },
+              sprites: {
+                acceptReporters: true,
+                items: 'getTargets'
+              },
             }
           };
         }
@@ -2073,14 +2628,6 @@
           return document.hasFocus();
         }
 
-        js_stack (args) {
-          throw new Error("This block is no longer supported");
-        }
-
-        js_reporter (args) {
-          throw new Error("This block is no longer supported");
-        }
-
         not_equals(args) {
           return args.one != args.two;
         }
@@ -2277,20 +2824,22 @@
         }
 
         create_tag_type(args) {
-          v_tag_types.push(args.tag_type_name);
+          if (!v_tag_types.includes(args.tag_type_name)) {
+            v_tag_types.push(args.tag_type_name);
+          }
           Scratch.vm.extensionManager.refreshBlocks();
         }
 
         return_all_tag_types(args) {
-          return v_tag_types;
+          return JSON.stringify(v_tag_types);
         }
 
         return_list_of_vars(args) {
-          return Object.keys(temp_vars);
+          return JSON.stringify(Object.keys(temp_vars));
         }
 
         return_list_of_tags(args) {
-          return Object.keys(tags);
+          return JSON.stringify(Object.keys(tags));
         }
 
         convert_to_id_with_namespace(args) {
@@ -2562,6 +3111,14 @@
           return String(args.thing_1) + String(args.thing_2) + String(args.thing_3) + String(args.thing_4) + String(args.thing_5);
         }
 
+        join_six (args) {
+          return String(args.thing_1) + String(args.thing_2) + String(args.thing_3) + String(args.thing_4) + String(args.thing_5) + String(args.thing_6);
+        }
+
+        join_seven (args) {
+          return String(args.thing_1) + String(args.thing_2) + String(args.thing_3) + String(args.thing_4) + String(args.thing_5) + String(args.thing_6) + String(args.thing_7);
+        }
+
         remove_file_extension (args) {
           let splitted_path = String(args.path).split(".");
           splitted_path.splice(splitted_path.length - 1, 1);
@@ -2575,6 +3132,433 @@
 
         id_to_prefixed_translation_key (args) {
           return String(args.prefix) + "." + this.id_to_translation_key(args);
+        }
+
+        get_list_of_tag_types() {
+          if (v_tag_types.length > 0) return v_tag_types;
+          return ['no_registries_available'];
+        }
+
+        get_loaded_tags() {
+          let list = Object.keys(tags);
+          if (list.length > 0) {
+            return list.map((i) => ({
+              text: i.replace(tag_name_delimeter, " / "),
+              value: i,
+            }));
+          }
+          return [
+            {
+              text: 'no tags loaded',
+              value: 'no_tags_loaded'
+            }
+          ];
+        }
+
+        create_registry(args) {
+          this.create_tag_type({tag_type_name: args.name});
+          //registry_entries[args.name] = [];
+          registries[args.name] = {};
+        }
+
+        type_of_value (value) {
+          let type = typeof value;
+          if (type === "number") {
+            if (Number.isInteger(value)) return "integer";
+            return "float";
+          }
+          if (Array.isArray(value)) return "array";
+          if (value === null) return "null";
+          return type;
+        }
+
+        is_type (type, value) {
+          let type2 = this.type_of_value(value);
+          if (typeof value === "number" && type === "number") return true;
+          if (type2 === type) return true;
+          return false;
+        }
+
+        set_display_of_registry(args) {
+          registries[args.registry][args.display] = args.name;
+        }
+
+        create_registry_from_json(args) {
+          this.create_tag_type({tag_type_name: args.name});
+          registries[args.name] = JSON.parse(args.json);
+        }
+
+        get_json_of_registry(args) {
+          return JSON.stringify(registries[args.registry]);
+        }
+
+        add_param_to_registry(args) {
+          let param_name = args.name;
+          let param_type = args.type;
+          if (!Object.keys(registries[args.registry]).includes("params")) registries[args.registry].params = {};
+          let param = {};
+          param.type = param_type;
+          registries[args.registry].params[param_name] = param;
+        }
+
+        make_param_optional(args) {
+          check_for_param(args.name, args.registry);
+          registries[args.registry].params[args.name].required = false;
+        }
+
+        set_default_value_of_param(args) {
+          check_for_param(args.name, args.registry);
+          registries[args.registry].params[args.name].default_value = parse_value_for_json(args.value);
+        }
+
+        validate_value(value, type) {
+          switch (type) {
+            case "tag":
+              if (Array.isArray(value)) return true;
+              return (value.charAt(0) == "#" && is_id_valid(value.replace("#","")));
+            case "registry_entry":
+              return is_id_valid(value);
+            case "id":
+              return is_id_valid(value);
+            default:
+              return this.is_type(type, value);
+          }
+        }
+
+        set_number_param_range(args) {
+          check_for_param(args.param, args.registry);
+          registries[args.registry].params[args.param].range = [Number(args.min), Number(args.max)];
+        }
+
+        get_sound_list() {
+          try {
+            const tuneshark = Scratch.vm.runtime.ext_SPtuneShark3;
+            let sounds = JSON.parse(tuneshark.allSounds());
+            if (sounds.length > 0) return sounds;
+            return ['none'];
+          } catch (e) {
+            return ['TuneShark V3 not loaded'];
+          }
+        }
+
+        set_array_param_range(args) {
+          check_for_param(args.param, args.registry);
+          registries[args.registry].params[args.param].length_range = [Number(args.min), Number(args.max)];
+        }
+
+        set_array_value_type(args) {
+          check_for_param(args.param, args.registry);
+          registries[args.registry].params[args.param].array_type = String(args.type);
+        }
+
+        set_registry_entry_type(args) {
+          check_for_param(args.param, args.registry);
+          registries[args.registry].params[args.param].registry = String(args.type);
+        }
+
+        validate_registry_entries(args) {
+          let registry = String(args.registry);
+          let params = registries[registry].params;
+          for (let entry in registry_entries) {
+            if (entry.startsWith(registry + registry_entry_delimeter)) {
+              let data = registry_entries[entry];
+              for (let param_key in params) {
+                let param_data = params[param_key];
+                if (data.hasOwnProperty(param_key)) {
+                  let defined_type = param_data.type;
+                  let value = data[param_key];
+                  if (this.validate_value(value, defined_type)) {
+                    switch (defined_type) {
+                      case "integer":
+                      case "float":
+                      case "number":
+                        this.validation_for_numbers(registry, entry, value, param_key, param_data);
+                        break;
+                      case "registry_entry":
+                        this.validation_for_registry_entry(registry, entry, value, param_key, param_data);
+                        break;
+                      case "id":
+                        if (!is_id_valid(value)) {
+                          add_validation_error(registry, entry, 'Id in "' + param_key + '" is invalid');
+                          break;
+                        }
+                        registry_entries[entry][param_key] = add_namespace_to_string(value);
+                        break;
+                      case "array":
+                        this.validation_for_array(registry, entry, value, param_key, param_data);
+                        break;
+                    }
+                  } else {
+                    add_validation_error(registry, entry, 'Wrong type for parameter "' + param_key + '"');
+                    break;
+                  }
+                } else { // no key \/
+                  let required = true;
+                  if (param_data.hasOwnProperty("required")) required = param_data.required;
+                  if (required) {
+                    add_validation_error(registry, entry, 'Missing parameter "' + param_key + '"');
+                    break;
+                  }
+                  if (param_data.hasOwnProperty("default_value")) {
+                    if (!required) {
+                      registry_entries[entry][param_key] = param_data.default_value;
+                    } else {
+                      add_validation_error(registry, entry, 'Default value for "' + param_key + '" exists, but the parameter is required, which is illegal.');
+                      break;
+                    }
+                  }
+                } // no key /\
+              }
+            }
+          }
+        }
+
+        validation_for_numbers(registry, entry, value, param_key, param_data) {
+          if (param_data.hasOwnProperty("range")) {
+            if (Array.isArray(param_data.range)) {
+              let range = param_data.range;
+              if (range.length == 2) {
+                if (!((value >= range[0]) && (value <= range[1]))) {
+                  add_validation_error(registry, entry, 'Parameter "' + param_key + '" is not in allowed value range');
+                }
+              } else {
+                add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" has ' + range.length + ' values instead of 2');
+              }
+            } else {
+              add_validation_error(registry, entry, '"range" for parameter "' + param_key + '" is not an array');
+            }
+          }
+        }
+
+        validation_for_registry_entry(registry, entry, value, param_key, param_data) {
+          if (param_data.hasOwnProperty("registry")) {
+            let defined_registry_type = param_data.registry;
+            if (typeof defined_registry_type === "string") {
+              if (!registry_entries.hasOwnProperty(defined_registry_type + registry_entry_delimeter + value)) {
+                add_validation_error(registry, entry, 'The registry entry defined in "' + param_key + '" does not exist');
+              }
+            } else {
+              add_validation_error(registry, entry, 'The registry defined for "' + param_key + '" is not a string');
+            }
+          } else {
+            add_validation_error(registry, entry, 'No registry defined for "' + param_key + '"');
+          }
+        }
+
+        validation_for_array(registry, entry, value, param_key, param_data) {
+          if (!Array.isArray(value)) {
+            add_validation_error(registry, entry, 'Parameter "' + param_key + '" is not an array');
+            return;
+          }
+          if (param_data.hasOwnProperty("length_range")) {
+            let range = param_data.length_range;
+            if (!Array.isArray(range)) {
+              add_validation_error(registry, entry, 'Range given for "' + param_key + '" is not an array');
+              return;
+            }
+            if (range.length != 2) {
+              add_validation_error(registry, entry, 'Range given for "' + param_key + '" has ' + range.length + ' values instead of 2');
+              return;
+            }
+            if (!((value.length >= range[0]) && (value.length <= range[1]))) {
+              add_validation_error(registry, entry, 'Length of array for "' + param_key + '" is not within defined acceptable range');
+              return;
+            }
+          }
+          if (param_data.hasOwnProperty("array_type")) {
+            if (param_data.array_type == "array") {
+              add_validation_error(registry, entry, 'Array type of "' + param_key + '" cannot be an array');
+              return;
+            }
+            for (let i in value) {
+              let thing = value[i];
+              if (this.validate_value(thing, param_data.array_type)) {
+                switch (param_data.array_type) {
+                  case "integer":
+                  case "float":
+                  case "number":
+                    this.validation_for_numbers(registry, entry, thing, param_key, param_data);
+                  case "registry_entry":
+                    this.validation_for_registry_entry(registry, entry, thing, param_key, param_data);
+                  case "id":
+                    if (!is_id_valid(thing)) {
+                      add_validation_error(registry, entry, 'Id in "' + param_key + '" is invalid');
+                      break;
+                    }
+                    registry_entries[entry][param_key][i] = add_namespace_to_string(thing);
+                }
+              } else {
+                add_validation_error(registry, entry, 'Item ' + (i + 1) + ' of "' + param_key + '" is the wrong type!');
+                break;
+              }
+            }
+          }
+        }
+
+        allow_custom_params_in_registry(args) {
+          registries[args.registry].allow_custom_parameters = Cast.toBoolean(args.bool);
+        }
+
+        get_registry_entries() {
+          let list = Object.keys(registry_entries);
+          if (list.length > 0) {
+            return list.map((i) => ({
+              text: i.replace(registry_entry_delimeter, " / "),
+              value: i,
+            }));
+          }
+          return [
+            {
+              text: 'no entries loaded',
+              value: 'no_entries_loaded'
+            }
+          ];
+        }
+
+        create_registry_entry(args) {
+          let registry = String(args.registry);
+          let id = this.return_id_with_namespace({string: String(args.id)});
+          let data = JSON.parse(args.data);
+          registry_entries[registry + registry_entry_delimeter + id] = data;
+        }
+
+        get_registry_entry(args) {
+          let registry = String(args.registry);
+          let id = this.return_id_with_namespace({string: String(args.id)});
+          let entry = registry_entries[registry + registry_entry_delimeter + id] || "";
+          if (entry != "") return JSON.stringify(entry);
+          return entry;
+        }
+
+        get_registry_entry_from_list(args) {
+          let entry = registry_entries[args.registry_entry] || "";
+          if (entry != "") return JSON.stringify(entry);
+          return entry;
+        }
+
+        get_all_registry_entries(args) {
+          return JSON.stringify(registry_entries);
+        }
+
+        get_validation_errors(args) {
+          return JSON.stringify(registry_validation_errors);
+        }
+
+        clear_validation_errors(args) {
+          registry_validation_errors = {};
+        }
+
+        shadow_registry() {}
+        shadow_entry() {}
+        validate_if_registry_entry_exists() {}
+
+        delete_registries(args) {
+          registries = {};
+          v_tag_types = [];
+        }
+
+        // taken from skins ext
+        getTargets() {
+          const items = [];
+          const targets = vm.runtime.targets;
+          for (let index = 1; index < targets.length; index++) {
+            const target = targets[index];
+            if (target.isOriginal) {
+              items.push({
+                text: target.getName(),
+                value: target.getName()
+              });
+            }
+          }
+          return items.length > 0 ? items : [""];
+        }
+
+        // taken from clones+ ext
+        create_clone_of_sprite_with_data(args, util) {
+          const target = vm.runtime.getSpriteTargetByName(String(args.sprite));
+          const sprite = target.sprite;
+          vm.runtime.ext_scratch3_control._createClone(
+            sprite.name,
+            target
+          );
+          const clones = sprite.clones;
+          const cloneNum = clones.length - 1;
+          const cloneVariable = clones[cloneNum].lookupVariableByNameAndType(args.var, "", clones[cloneNum]);
+          if (cloneVariable) {
+            cloneVariable.value = String(args.data);
+          }
+        }
+
+        get_real_var(args, util) {
+          const v = util.target.lookupVariableByNameAndType(Cast.toString(args.var), "");
+          return v ? v.value : "";
+        }
+
+        create_clone_of_sprite_with_data_two(args, util) {
+          const target = vm.runtime.getSpriteTargetByName(String(args.sprite));
+          const sprite = target.sprite;
+          vm.runtime.ext_scratch3_control._createClone(
+            sprite.name,
+            target
+          );
+          const clones = sprite.clones;
+          const cloneNum = clones.length - 1;
+          const cloneVariable = clones[cloneNum].lookupVariableByNameAndType(args.var, "", clones[cloneNum]);
+          if (cloneVariable) {
+            cloneVariable.value = String(args.data);
+          }
+          const cloneVariable2 = clones[cloneNum].lookupVariableByNameAndType(args.var2, "", clones[cloneNum]);
+          if (cloneVariable2) {
+            cloneVariable2.value = String(args.data2);
+          }
+        }
+
+        set_real_var(args, util) {
+          const v = util.target.lookupVariableByNameAndType(Cast.toString(args.var), "");
+          if (v) {
+            v.value = args.value;
+          }
+        }
+
+        current_timestamp(args) {
+          return Date.now();
+        }
+
+        date_from_timestamp(args) {
+          let date = new Date(Cast.toNumber(args.timestamp));
+          return date.toLocaleString(String(this.get_user_language()), {
+            year:"numeric",
+            month:"long",
+            day:"numeric",
+            hour12:true,
+            hour:"2-digit",
+            minute:"2-digit",
+            second:"2-digit",
+            timeZoneName:"short"
+          });
+        }
+
+        return_device_memory() {
+          return navigator.deviceMemory;
+        }
+
+        position_self(args, util) {
+          let x = Cast.toNumber(args.x);
+          let y = Cast.toNumber(args.y);
+          const id = util.target.drawableID;
+          if (vm.renderer._drawList.indexOf(id) !== -1) {
+            vm.renderer._allDrawables[id].updatePosition([x, y]);
+          }
+        }
+
+        get_display_of_registry(args) {
+          try {
+            let ref = Cast.toString(registries[Cast.toString(args.registry)][Cast.toString(args.display)]);
+            if (ref == "undefined") return Cast.toString(args.registry);
+            return ref;
+          } catch {
+            return Cast.toString(args.registry);
+          }
         }
 
       } // end of blocks code
