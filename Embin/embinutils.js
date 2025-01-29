@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.0';
+    const embin_utils_version = 'v1.20.1';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -510,6 +510,28 @@
                 timestamp: {
                   type: Scratch.ArgumentType.NUMBER,
                   defaultValue: '1572475998000'
+                }
+              }
+            },
+            {
+              opcode: 'duration_from_timestamp',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'timestamp [timestamp] to duration',
+              arguments: {
+                timestamp: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '64302'
+                }
+              }
+            },
+            {
+              opcode: 'duration_from_timestamp_unrounded',
+              blockType: Scratch.BlockType.REPORTER,
+              text: 'timestamp [timestamp] to unrounded duration',
+              arguments: {
+                timestamp: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: '64302'
                 }
               }
             },
@@ -3559,6 +3581,22 @@
           } catch {
             return Cast.toString(args.registry);
           }
+        }
+
+        duration_from_timestamp(args) {
+          const total = Cast.toNumber(args.timestamp) / 1000;
+          const seconds = Math.round(total % 60).toString().padStart(2, "0");
+          const minutes = Math.floor((total / 60) % 60).toString().padStart(2, "0");
+          const hours = Math.floor(total / 3600).toString().padStart(2, "0");
+          return `${hours}:${minutes}:${seconds}`;
+        }
+
+        duration_from_timestamp_unrounded(args) {
+          const total = Cast.toNumber(args.timestamp) / 1000;
+          const seconds = (total % 60).toFixed(3).padStart(6, "0");
+          const minutes = Math.floor((total / 60) % 60).toString().padStart(2, "0");
+          const hours = Math.floor(total / 3600).toString().padStart(2, "0");
+          return `${hours}:${minutes}:${seconds}`;
         }
 
       } // end of blocks code
