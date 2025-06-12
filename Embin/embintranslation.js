@@ -1,4 +1,4 @@
-// Name: Translation Utils
+// Name: Translation Keys
 // ID: embintranslation
 // By: Embin <https://scratch.mit.edu/users/Embin/>
 
@@ -6,17 +6,26 @@
     'use strict';
 
     if (!Scratch.extensions.unsandboxed) {
-        throw new Error('"Translation Utils" must run unsandboxed');
+        throw new Error('"Translation Keys" must run unsandboxed');
     }
 
-    const embin_translation_utils_version = 'v1.0.0';
-    let translations = {};
+    const embin_translation_utils_version = 'v1.1.0';
+    const Cast = Scratch.Cast;
+    let selected_lang = navigator.language || navigator.userLanguage; 
+    let current_lang_data = {};
+    let languages = {};
+    languages[selected_lang] = {};
+    if (selected_lang != "en-US") languages["en-US"] = {};
+
+    function get_lang_data(lang) {
+        return languages[Cast.toString(lang)] || {};
+    }
   
     class EmbinTranslation {
         getInfo() {
             return {
                 id: 'embintranslation',
-                name: "Translation Utils",
+                name: "Translation Keys",
                 color3: "#00f4ff",
                 color1: "#00565b",
                 color2: "#00494d",
@@ -27,17 +36,29 @@
                         text: 'user language code',
                         disableMonitor: false
                     },
+                    {
+                        opcode: 'get_selected_language',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'current selected language',
+                        disableMonitor: false
+                    },
                     '---',
                     {
                         opcode: 'get_translation_json',
                         blockType: Scratch.BlockType.REPORTER,
-                        text: 'get translations as json',
+                        text: 'get current translation data as json',
+                        disableMonitor: true
+                    },
+                    {
+                        opcode: 'get_all_translation_json',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'get all translation data as json',
                         disableMonitor: true
                     },
                     {
                         opcode: 'set_translation_json',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'set translations to json [json]',
+                        text: 'set current translation data to json [json]',
                         arguments: {
                             json: {
                                 type: Scratch.ArgumentType.STRING,
@@ -46,7 +67,38 @@
                         }
                     },
                     {
+                        opcode: 'set_lang_translation_json',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'set translation data of language [lang] to json [json]',
+                        arguments: {
+                            lang: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'en-US'
+                            },
+                            json: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '{"block.stone":"Stone","block.air":"Air %s dud"}'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'set_current_language',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'set current language to [lang]',
+                        arguments: {
+                            lang: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'en-US'
+                            }
+                        }
+                    },
+                    {
                         opcode: 'clear_translations',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'clear current translation data'
+                    },
+                    {
+                        opcode: 'clear_all_translations',
                         blockType: Scratch.BlockType.COMMAND,
                         text: 'clear all translations'
                     },
@@ -83,7 +135,7 @@
                     {
                         opcode: 'add_translation',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'add translation key [key] with value [value]',
+                        text: 'add translation key [key] with value [value] to current lang',
                         arguments: {
                             key: {
                                 type: Scratch.ArgumentType.STRING,
@@ -98,7 +150,7 @@
                     {
                         opcode: 'remove_translation',
                         blockType: Scratch.BlockType.COMMAND,
-                        text: 'remove translation key [key]',
+                        text: 'remove translation key [key] from current lang',
                         arguments: {
                             key: {
                                 type: Scratch.ArgumentType.STRING,
@@ -119,9 +171,9 @@
         }
 
         get_translation (args) {
-            let key = String(args.translation_key);
-            if (Object.keys(translations).includes(key)) return String(translations[key]);
-            if (Object.keys(translations).includes("missingtranslation")) return this.get_translation_with_data({translation_key: "missingtranslation", data: key});
+            let key = Cast.toString(args.translation_key);
+            if (Object.keys(current_lang_data).includes(key)) return String(current_lang_data[key]);
+            if (Object.keys(current_lang_data).includes("missingtranslation")) return this.get_translation_with_data({translation_key: "missingtranslation", data: key});
             return key;
         }
 
@@ -133,7 +185,7 @@
                 datas = JSON.parse(args.data);
                 if (!Array.isArray(datas)) throw new Error("not array");
             } catch {
-                datas = String(args.data);
+                datas = Cast.toString(args.data);
                 is_data_string = true;
             }
             if (is_data_string) {
@@ -156,32 +208,66 @@
         }
 
         get_translation_json (args) {
-            return JSON.stringify(translations);
+            return JSON.stringify(current_lang_data);
         }
 
         add_translation (args) {
-            translations[String(args.key)] = String(args.value);
+            current_lang_data[Cast.toString(args.key)] = Cast.toString(args.value);
+            languages[selected_lang][Cast.toString(args.key)] = Cast.toString(args.value);
         }
 
         set_translation_json (args) {
             let new_json = JSON.parse(args.json);
-            if (!Array.isArray(new_json)) translations = new_json;
+            if (!Array.isArray(new_json)) {
+                current_lang_data = new_json;
+                languages[selected_lang] = current_lang_data;
+            }
         }
 
+        /*
         serialize () {
-            return { embintranslation: translations };
+            return { embintranslation: current_lang_data };
         }
 
         deserialize (data) {
-            translations = data.embintranslation || {};
+            current_lang_data = data.embintranslation || {};
         }
+        */
 
         remove_translation (args) {
-            delete translations[String(args.key)];
+            delete current_lang_data[Cast.toString(args.key)];
+            delete languages[selected_lang][Cast.toString(args.key)];
         }
 
         clear_translations (args) {
-            translations = {};
+            current_lang_data = {};
+            languages[selected_lang] = {};
+        }
+
+        get_selected_language (args) {
+            return selected_lang;
+        }
+
+        clear_all_translations (args) {
+            languages = {};
+        }
+
+        set_current_language (args) {
+            selected_lang = Cast.toString(args.lang);
+            current_lang_data = languages[selected_lang] || {};
+            // if (!Object.keys(languages).includes(selected_lang)) languages[selected_lang] = {};
+        }
+
+        get_all_translation_json (args) {
+            return JSON.stringify(languages);
+        }
+
+        set_lang_translation_json (args) {
+            let new_json = JSON.parse(args.json);
+            if (!Array.isArray(new_json)) {
+                languages[Cast.toString(args.lang)] = new_json;
+                if (selected_lang == Cast.toString(args.lang)) current_lang_data = new_json;
+            }
         }
 
     } // end of blocks code
