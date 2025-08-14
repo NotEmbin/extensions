@@ -1,6 +1,8 @@
 // Name: Translation Keys
 // ID: embintranslation
+// Description: Use translation keys in your projects for multi-language support
 // By: Embin <https://scratch.mit.edu/users/Embin/>
+// License: MIT
 
 (function (Scratch) {
     'use strict';
@@ -9,26 +11,22 @@
         throw new Error('"Translation Keys" must run unsandboxed');
     }
 
-    const embin_translation_utils_version = 'v1.1.0';
+    const embin_translation_keys_version = 'v1.1.1';
     const Cast = Scratch.Cast;
-    let selected_lang = navigator.language || navigator.userLanguage; 
+    let selected_lang = navigator.language || navigator.userLanguage;
     let current_lang_data = {};
     let languages = {};
     languages[selected_lang] = {};
     if (selected_lang != "en-US") languages["en-US"] = {};
-
-    function get_lang_data(lang) {
-        return languages[Cast.toString(lang)] || {};
-    }
   
     class EmbinTranslation {
         getInfo() {
             return {
                 id: 'embintranslation',
-                name: "Translation Keys",
-                color3: "#00f4ff",
-                color1: "#00565b",
-                color2: "#00494d",
+                name: 'Translation Keys',
+                color1: '#00565b',
+                color2: '#00494d',
+                color3: '#00f4ff',
                 blocks: [
                     {
                         opcode: 'get_user_language',
@@ -163,7 +161,7 @@
         }
 
         return_version (args) {
-            return embin_translation_utils_version;
+            return embin_translation_keys_version;
         }
 
         get_user_language (args) {
@@ -213,6 +211,7 @@
 
         add_translation (args) {
             current_lang_data[Cast.toString(args.key)] = Cast.toString(args.value);
+            if (!Object.hasOwn(languages, selected_lang)) languages[selected_lang] = {};
             languages[selected_lang][Cast.toString(args.key)] = Cast.toString(args.value);
         }
 
@@ -224,15 +223,18 @@
             }
         }
 
-        /*
+        
         serialize () {
-            return { embintranslation: current_lang_data };
+            return { embintranslation: { current_lang_data: current_lang_data, languages: languages } };
         }
 
         deserialize (data) {
-            current_lang_data = data.embintranslation || {};
+            if (data.embintranslation !== undefined) {
+                current_lang_data = data.embintranslation.current_lang_data;
+                languages = data.embintranslation.languages;
+            }
         }
-        */
+        
 
         remove_translation (args) {
             delete current_lang_data[Cast.toString(args.key)];
@@ -250,12 +252,13 @@
 
         clear_all_translations (args) {
             languages = {};
+            current_lang_data = {};
         }
 
         set_current_language (args) {
             selected_lang = Cast.toString(args.lang);
-            current_lang_data = languages[selected_lang] || {};
-            // if (!Object.keys(languages).includes(selected_lang)) languages[selected_lang] = {};
+            if (!Object.hasOwn(languages, selected_lang)) languages[selected_lang] = {};
+            current_lang_data = languages[selected_lang];
         }
 
         get_all_translation_json (args) {
