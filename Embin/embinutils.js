@@ -6,7 +6,7 @@
 (function(Scratch) {
     'use strict';
 
-    const embin_utils_version = 'v1.20.1';
+    const embin_utils_version = 'v1.20.2';
 
     if (!Scratch.extensions.unsandboxed) {
       //console.warn('Extension is being run in sandbox mode.');  
@@ -1487,7 +1487,8 @@
                 },
                 value: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: 'value'
+                  defaultValue: 'value',
+                  exemptFromNormalization: true
                 }
               }
             },
